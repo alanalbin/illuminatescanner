@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import confetti from 'canvas-confetti';
 import { api } from '../services/api';
@@ -16,6 +17,7 @@ import {
   ArrowRight,
   Clock,
   User,
+  UserCheck,
   Ticket as TicketIcon
 } from 'lucide-react';
 
