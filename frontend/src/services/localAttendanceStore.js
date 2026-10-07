@@ -1,7 +1,7 @@
 import { INITIAL_ATTENDEES } from '../data/attendees.js';
 
-const STORAGE_KEY = 'illuminate_local_attendees_v2';
-const LOGS_KEY = 'illuminate_local_checkin_logs_v2';
+const STORAGE_KEY = 'illuminate_local_attendees_v3';
+const LOGS_KEY = 'illuminate_local_checkin_logs_v3';
 
 const memoryStore = new Map();
 const safeStorage = {
@@ -22,24 +22,36 @@ const safeStorage = {
 
 function loadTickets() {
   try {
-    const raw = safeStorage.getItem(STORAGE_KEY);
+    const raw = safeStorage.getItem(STORAGE_KEY) || safeStorage.getItem('illuminate_local_attendees_v2');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Merge in case any of the 27 attendees were missing
+        // Merge in all 38 attendees
         const existingMap = new Map(parsed.map(t => [t.ticketId.toUpperCase(), t]));
+        let modified = false;
         INITIAL_ATTENDEES.forEach(init => {
           if (!existingMap.has(init.ticketId.toUpperCase())) {
             parsed.push({ ...init });
+            modified = true;
+          } else {
+            // Update metadata if missing
+            const ex = existingMap.get(init.ticketId.toUpperCase());
+            if (ex && (!ex.college || !ex.course)) {
+              ex.college = init.college;
+              ex.course = init.course;
+              ex.yearOfStudy = init.yearOfStudy;
+              modified = true;
+            }
           }
         });
+        saveTickets(parsed);
         return parsed;
       }
     }
   } catch (e) {
     console.error('Failed to parse local attendees:', e);
   }
-  // Initialize with the 27 registered attendees
+  // Initialize with the 38 registered attendees
   const initial = INITIAL_ATTENDEES.map(t => ({ ...t }));
   safeStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
   return initial;
@@ -55,7 +67,7 @@ function saveTickets(tickets) {
 
 function loadLogs() {
   try {
-    const raw = safeStorage.getItem(LOGS_KEY);
+    const raw = safeStorage.getItem(LOGS_KEY) || safeStorage.getItem('illuminate_local_checkin_logs_v2');
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export default function QrScanner() {
-  const [stats, setStats] = useState({ totalRegistrations: 27, checkedIn: 0, remaining: 27 });
+  const [stats, setStats] = useState({ totalRegistrations: 38, checkedIn: 0, remaining: 38 });
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -39,9 +39,9 @@ export default function QrScanner() {
     try {
       const data = await api.getStats();
       setStats({
-        totalRegistrations: data.totalRegistrations || 27,
+        totalRegistrations: data.totalRegistrations || 38,
         checkedIn: data.checkedIn || 0,
-        remaining: data.remaining != null ? data.remaining : 27,
+        remaining: data.remaining != null ? data.remaining : 38,
       });
     } catch (e) {
       console.warn('Stats fetch error:', e);
@@ -360,7 +360,7 @@ export default function QrScanner() {
                     UNRECOGNIZED PASS
                   </div>
                   <div className="text-xs uppercase font-extrabold tracking-widest text-rose-300">
-                    NOT IN 27 ATTENDEE LIST
+                    NOT IN REGISTERED ATTENDEE LIST
                   </div>
                 </div>
               )}

@@ -103,7 +103,18 @@ public class DataSeeder implements CommandLineRunner {
             new Ticket("ILM-KMCT-MUW21VK8-FEAB0A", "Hamraz Akmal", "hamrazakmal123@gmail.com", "7025793611"),
             new Ticket("ILM-KMCT-MUW5L9VV-71A713", "Mohammed Bilal", "billabilmohd@gmail.com", "9447179185"),
             new Ticket("ILM-KMCT-MUW9Z2IF-D56478", "FATHIMA RIZA", "fathimariza0512@gmail.com", "9495040547"),
-            new Ticket("ILM-KMCT-MUWD8NLH-C9288C", "Fathima ahammed", "fathima@kmct.edu.in", "9292210284")
+            new Ticket("ILM-KMCT-MUWD8NLH-C9288C", "Fathima ahammed", "fathima@kmct.edu.in", "9292210284"),
+            new Ticket("ILM-KMCT-MUWD9KAD-4B2DD7", "Kadeejath Mashmooma", "kadeejathmashmooma@gmail.com", "9048883434"),
+            new Ticket("ILM-KMCT-MUWNA8YF-D10523", "Akshay Kumar", "akshaykumar242484@gmail.com", "7012653335"),
+            new Ticket("ILM-KMCT-MUWQ1OVX-B67F9B", "Khadeejath Arfana", "arfanaappi10@gmail.com", "8129504013"),
+            new Ticket("ILM-KMCT-MUWTIYWJ-1D4974", "Nidha Fathima", "fnidha628@gmail.com", "7736117557"),
+            new Ticket("ILM-KMCT-MUWU7D04-3F5A7E", "Fathima Nooha Aboobacker", "fathimanoohaaboobacker@gmail.com", "8943795017"),
+            new Ticket("ILM-KMCT-MUWTL95T-141AD0", "Muhammed Zeeshan", "muhdzeeshann@gmail.com", "8129112711"),
+            new Ticket("ILM-KMCT-MUWU78Z8-9982F4", "Shivarjun S M", "shivarjunsm20@gmail.com", "7592882518"),
+            new Ticket("ILM-KMCT-MUXJPFS0-797946", "Hisham abdulla", "hishamabdulla269@gmail.com", "7012984673"),
+            new Ticket("ILM-KMCT-MUXKIC2D-71EB4E", "Ayshath Shua", "shuaayshath@gmail.com", "7306753675"),
+            new Ticket("ILM-KMCT-MUXP4TXM-342433", "ABDULLA P", "abdullabinnizar@gmail.com", "9207370942"),
+            new Ticket("ILM-KMCT-MUXPDNGK-B06807", "Muhammad Rishad kr", "byrishad@gmail.com", "8714661917")
         );
 
         for (Ticket ticket : officialTickets) {

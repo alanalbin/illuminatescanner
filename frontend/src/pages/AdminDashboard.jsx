@@ -133,7 +133,7 @@ export default function AdminDashboard() {
               Check-in Progress
             </h2>
             <p className="text-xs text-purple-300/70 mt-0.5">
-              {stats?.checkedIn || 0} of {stats?.totalRegistrations || 27} participants verified
+              {stats?.checkedIn || 0} of {stats?.totalRegistrations || 38} participants verified
             </p>
           </div>
           <div className="text-right">

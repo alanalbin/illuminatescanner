@@ -81,10 +81,10 @@ export default function PassGallery() {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Scannable QR Passes (27 Attendees)
+              Scannable QR Passes ({tickets.length || 38} Attendees)
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-950/80 text-purple-300 border border-purple-500/40">
-              {checkedInCount} / {tickets.length || 27} Checked In
+              {checkedInCount} / {tickets.length || 38} Checked In
             </span>
           </div>
           <p className="text-xs sm:text-sm text-purple-300/70 mt-1">
