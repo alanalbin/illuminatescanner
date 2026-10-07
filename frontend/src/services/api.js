@@ -1,0 +1,237 @@
+import { localAttendanceStore } from './localAttendanceStore';
+
+const API_BASE = '/api';
+
+function getAuthHeader() {
+  const token = localStorage.getItem('illuminate_token');
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
+async function request(endpoint, options = {}) {
+  const url = `${API_BASE}${endpoint}`;
+  const headers = {
+    ...getAuthHeader(),
+    ...options.headers,
+  };
+
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Request failed: ${res.status}`;
+    try {
+      const errorData = await res.json();
+      errorMsg = errorData.message || errorData.error || errorMsg;
+    } catch {
+      // not JSON
+    }
+    throw new Error(errorMsg);
+  }
+
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return await res.json();
+  }
+  return res;
+}
+
+export const api = {
+  // Auth (backward compatible stub)
+  login: async (username, password) => {
+    try {
+      return await request('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+    } catch {
+      return { token: 'guest_token', username: 'volunteer', name: 'Attendance Desk', role: 'VOLUNTEER' };
+    }
+  },
+
+  // Dashboard Stats
+  getStats: async () => {
+    try {
+      return await request('/dashboard/stats');
+    } catch {
+      return localAttendanceStore.getStats();
+    }
+  },
+
+  // Tickets
+  getTickets: async (query = '', status = '') => {
+    try {
+      const params = new URLSearchParams();
+      if (query) params.append('query', query);
+      if (status && status !== 'ALL') params.append('status', status);
+      const qs = params.toString() ? `?${params.toString()}` : '';
+      return await request(`/tickets${qs}`);
+    } catch {
+      return localAttendanceStore.getTickets(query, status);
+    }
+  },
+
+  getTicket: async (ticketId) => {
+    try {
+      return await request(`/tickets/${encodeURIComponent(ticketId)}`);
+    } catch {
+      const ticket = localAttendanceStore.getTicket(ticketId);
+      if (!ticket) throw new Error(`Ticket not found: ${ticketId}`);
+      return ticket;
+    }
+  },
+
+  getDigitalPass: async (ticketId) => {
+    try {
+      return await request(`/tickets/${encodeURIComponent(ticketId)}/pass`);
+    } catch {
+      const ticket = localAttendanceStore.getTicket(ticketId);
+      if (!ticket) throw new Error(`Pass not found for ticket: ${ticketId}`);
+      return {
+        ticketId: ticket.ticketId,
+        participantName: ticket.participantName,
+        email: ticket.email,
+        phone: ticket.phone,
+        status: ticket.status,
+        checkedIn: ticket.checkedIn,
+        checkedInAt: ticket.checkedInAt,
+        eventName: 'ILLUMINATE 2026',
+        venue: 'KMCT Auditorium',
+        qrContent: typeof window !== 'undefined' 
+          ? `${window.location.origin}/ticket/${ticket.ticketId}`
+          : `http://localhost:5173/ticket/${ticket.ticketId}`,
+      };
+    }
+  },
+
+  createTicket: async (data) => {
+    try {
+      return await request('/tickets', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch {
+      const tickets = localAttendanceStore.getTickets();
+      const newTicket = {
+        ticketId: data.ticketId || `ILM-KMCT-MANUAL-${Date.now().toString(36).toUpperCase()}`,
+        participantName: data.participantName,
+        email: data.email || '',
+        phone: data.phone || '',
+        status: 'ACTIVE',
+        checkedIn: false,
+        checkedInAt: null,
+      };
+      tickets.unshift(newTicket);
+      localStorage.setItem('illuminate_local_attendees_v2', JSON.stringify(tickets));
+      return newTicket;
+    }
+  },
+
+  importCsv: async (file) => {
+    return await request('/tickets/import', {
+      method: 'POST',
+      body: file instanceof FormData ? file : (() => {
+        const fd = new FormData();
+        fd.append('file', file);
+        return fd;
+      })(),
+    });
+  },
+
+  exportCsvUrl: () => `${API_BASE}/tickets/export`,
+
+  downloadAttendanceCsv: () => {
+    const csvContent = localAttendanceStore.exportCsvString();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `illuminate_attendance_27_attendees_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
+
+  validateTicket: async (qrContent) => {
+    // Instant local evaluation
+    const localRes = localAttendanceStore.validateTicket(qrContent);
+    // Non-blocking background sync if backend is active
+    request('/tickets/validate', {
+      method: 'POST',
+      body: JSON.stringify({ qrContent }),
+    }).catch(() => {});
+    return localRes;
+  },
+
+  checkinTicket: async (qrContent, scannedBy = 'Attendance Desk', deviceInfo = navigator.userAgent) => {
+    // Instant local check-in with 100% offline reliability
+    const localRes = localAttendanceStore.checkinTicket(qrContent, scannedBy);
+    // Non-blocking background sync if backend is active
+    request('/tickets/checkin', {
+      method: 'POST',
+      body: JSON.stringify({ qrContent, scannedBy, deviceInfo }),
+    }).catch(() => {});
+    return localRes;
+  },
+
+  undoCheckin: async (ticketId) => {
+    try {
+      return await request(`/tickets/${encodeURIComponent(ticketId)}/undo-checkin`, {
+        method: 'POST',
+      });
+    } catch {
+      return localAttendanceStore.undoCheckin(ticketId);
+    }
+  },
+
+  cancelTicket: async (ticketId) => {
+    try {
+      return await request(`/tickets/${encodeURIComponent(ticketId)}/cancel`, {
+        method: 'POST',
+      });
+    } catch {
+      return localAttendanceStore.cancelTicket(ticketId);
+    }
+  },
+
+  // Scan history
+  getCheckins: async () => {
+    try {
+      return await request('/checkins');
+    } catch {
+      return localAttendanceStore.getCheckins();
+    }
+  },
+
+  // Event Settings
+  getSettings: async () => {
+    try {
+      return await request('/settings');
+    } catch {
+      return {
+        eventName: 'ILLUMINATE',
+        organizer: 'IIT Bombay E-Cell & KMCT',
+        eventYear: '2026',
+        eventDate: 'October 2026',
+        venue: 'KMCT Auditorium',
+        theme: 'PURPLE_BLACK',
+      };
+    }
+  },
+
+  updateSettings: async (settings) => {
+    try {
+      return await request('/settings', {
+        method: 'PUT',
+        body: JSON.stringify(settings),
+      });
+    } catch {
+      return settings;
+    }
+  },
+};

@@ -1,0 +1,17 @@
+# Dependencies & Build outputs
+node_modules/
+dist/
+dist-ssr/
+target/
+.tools/
+*.log
+
+# Environment secrets
+.env
+.env.local
+*.env
+
+# System & IDE
+.idea/
+.vscode/
+.DS_Store
