@@ -60,13 +60,19 @@ export const api = {
 
   // Dashboard Stats
   getStats: async () => {
+    const localStats = localAttendanceStore.getStats();
     try {
       const data = await request('/dashboard/stats');
-      const localStats = localAttendanceStore.getStats();
       if (data && typeof data === 'object' && typeof data.totalRegistrations === 'number') {
+        const mergedCheckedIn = Math.max(localStats.checkedIn || 0, data.checkedIn || 0);
+        const total = Math.max(localStats.totalRegistrations || 38, data.totalRegistrations || 38);
         return {
-          ...localStats,
           ...data,
+          totalRegistrations: total,
+          checkedIn: mergedCheckedIn,
+          remaining: Math.max(0, total - mergedCheckedIn),
+          qrGenerated: total,
+          checkinPercentage: total > 0 ? Math.round((mergedCheckedIn / total) * 1000) / 10 : 0,
           recentCheckins: Array.isArray(data.recentCheckins) && data.recentCheckins.length > 0 
             ? data.recentCheckins 
             : localStats.recentCheckins,
@@ -77,22 +83,38 @@ export const api = {
       }
       return localStats;
     } catch {
-      return localAttendanceStore.getStats();
+      return localStats;
     }
   },
 
   // Tickets
   getTickets: async (query = '', status = '') => {
+    const localTickets = localAttendanceStore.getTickets(query, status);
     try {
       const params = new URLSearchParams();
       if (query) params.append('query', query);
       if (status && status !== 'ALL') params.append('status', status);
       const qs = params.toString() ? `?${params.toString()}` : '';
       const data = await request(`/tickets${qs}`);
-      if (Array.isArray(data)) return data;
-      return localAttendanceStore.getTickets(query, status);
+      if (Array.isArray(data) && data.length > 0) {
+        const localCheckinMap = new Map(localTickets.map(t => [(t.ticketId || '').toUpperCase(), t]));
+        return data.map(remoteTicket => {
+          const local = localCheckinMap.get((remoteTicket.ticketId || '').toUpperCase());
+          if (local && local.checkedIn) {
+            return {
+              ...remoteTicket,
+              checkedIn: true,
+              checkedInAt: local.checkedInAt || remoteTicket.checkedInAt,
+              checkedInBy: local.checkedInBy || remoteTicket.checkedInBy,
+              status: 'USED',
+            };
+          }
+          return remoteTicket;
+        });
+      }
+      return localTickets;
     } catch {
-      return localAttendanceStore.getTickets(query, status);
+      return localTickets;
     }
   },
 

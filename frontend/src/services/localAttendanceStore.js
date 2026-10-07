@@ -44,7 +44,9 @@ function loadTickets() {
             }
           }
         });
-        saveTickets(parsed);
+        if (modified) {
+          safeStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        }
         return parsed;
       }
     }

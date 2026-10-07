@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import StatsCards from '../components/StatsCards';
@@ -31,6 +31,7 @@ import {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
+  const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -40,15 +41,21 @@ export default function AdminDashboard() {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
 
+  const debounceTimerRef = useRef(null);
+
   const fetchDashboardData = async (isSilent = false) => {
     if (!isSilent) setRefreshing(true);
     try {
-      const data = await api.getStats();
-      if (data && typeof data === 'object') {
-        setStats(data);
+      const [statsData, ticketsData] = await Promise.all([
+        api.getStats().catch(err => { console.warn('Stats err:', err); return null; }),
+        api.getTickets().catch(err => { console.warn('Tickets err:', err); return []; })
+      ]);
+      if (statsData) setStats(statsData);
+      if (Array.isArray(ticketsData) && ticketsData.length > 0) {
+        setTickets(ticketsData);
       }
     } catch (err) {
-      console.error('Failed to load dashboard stats:', err);
+      console.error('Failed to load dashboard data:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -63,9 +70,12 @@ export default function AdminDashboard() {
       fetchDashboardData(true);
     }, 3500);
 
-    // Instant real-time listener for scans from scanner tab or local store
+    // Instant real-time listener for scans from scanner tab or local store with debounce
     const handleAttendanceUpdate = () => {
-      fetchDashboardData(true);
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => {
+        fetchDashboardData(true);
+      }, 200);
     };
 
     window.addEventListener('illuminate_attendance_updated', handleAttendanceUpdate);
@@ -73,6 +83,7 @@ export default function AdminDashboard() {
 
     return () => {
       clearInterval(interval);
+      clearTimeout(debounceTimerRef.current);
       window.removeEventListener('illuminate_attendance_updated', handleAttendanceUpdate);
       window.removeEventListener('storage', handleAttendanceUpdate);
     };
@@ -112,11 +123,18 @@ export default function AdminDashboard() {
   };
 
   const handleQuickCheckin = async (ticket) => {
-    if (!window.confirm(`Mark attendance as PRESENT for ${ticket.participantName}?`)) return;
     setActionLoadingId(ticket.ticketId);
     try {
-      await api.checkinTicket(ticket.ticketId, 'Attendance Desk Quick-Checkin');
-      await fetchDashboardData(true);
+      await api.checkinTicket(ticket.ticketId, 'Attendance Desk');
+      // Optimistic instant state update
+      setTickets(prev => prev.map(t => t.ticketId === ticket.ticketId ? {
+        ...t,
+        checkedIn: true,
+        checkedInAt: new Date().toISOString(),
+        checkedInBy: 'Attendance Desk',
+        status: 'USED'
+      } : t));
+      fetchDashboardData(true);
     } catch (err) {
       alert(err.message || 'Check-in failed');
     } finally {
@@ -129,7 +147,15 @@ export default function AdminDashboard() {
     setActionLoadingId(ticket.ticketId);
     try {
       await api.undoCheckin(ticket.ticketId);
-      await fetchDashboardData(true);
+      // Optimistic instant state update
+      setTickets(prev => prev.map(t => t.ticketId === ticket.ticketId ? {
+        ...t,
+        checkedIn: false,
+        checkedInAt: null,
+        checkedInBy: null,
+        status: 'ACTIVE'
+      } : t));
+      fetchDashboardData(true);
     } catch (err) {
       alert(err.message || 'Undo check-in failed');
     } finally {
@@ -137,11 +163,35 @@ export default function AdminDashboard() {
     }
   };
 
-  // Filtered lists
-  const allAttendees = stats?.allAttendees || [];
-  const checkedInAttendees = stats?.checkedInAttendees || allAttendees.filter(t => t.checkedIn);
-  const awaitingAttendees = stats?.awaitingAttendees || allAttendees.filter(t => !t.checkedIn && t.status !== 'CANCELLED');
+  // Compute attendee lists
+  const allAttendees = tickets.length > 0 
+    ? tickets 
+    : (stats?.allAttendees || (stats?.checkedInAttendees ? [...(stats.checkedInAttendees || []), ...(stats.awaitingAttendees || [])] : []));
+
+  const checkedInAttendees = allAttendees.filter(t => t.checkedIn).sort((a, b) => {
+    const timeA = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0;
+    const timeB = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0;
+    return timeB - timeA;
+  });
+
+  const awaitingAttendees = allAttendees.filter(t => !t.checkedIn && t.status !== 'CANCELLED');
   const logs = stats?.recentCheckins || stats?.recentActivity || [];
+
+  // Live computed stats for accurate counts
+  const liveStats = useMemo(() => {
+    const total = allAttendees.length || stats?.totalRegistrations || 38;
+    const checkedInCount = checkedInAttendees.length;
+    const remainingCount = Math.max(0, total - checkedInCount);
+    return {
+      ...stats,
+      totalRegistrations: total,
+      checkedIn: checkedInCount,
+      remaining: remainingCount,
+      qrGenerated: total,
+      checkinPercentage: total > 0 ? Math.round((checkedInCount / total) * 1000) / 10 : 0,
+      invalidAttempts: stats?.invalidAttempts || 0,
+    };
+  }, [stats, allAttendees, checkedInAttendees]);
 
   const filterBySearch = (list) => {
     if (!searchQuery.trim()) return list;
@@ -171,7 +221,7 @@ export default function AdminDashboard() {
             </h1>
             <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-500/40">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              Live Desk
+              Live Attendance Desk
             </span>
           </div>
           <p className="text-xs sm:text-sm text-purple-300/70 mt-1">
@@ -225,7 +275,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Statistics Cards */}
-      <StatsCards stats={stats} />
+      <StatsCards stats={liveStats} />
 
       {/* Check-in Progress & Overview Banner */}
       <div className="glass-panel rounded-2xl p-6 border border-purple-500/20 shadow-md">
@@ -233,26 +283,26 @@ export default function AdminDashboard() {
           <div>
             <h2 className="text-base font-bold text-white flex items-center gap-2">
               <UserCheck className="w-5 h-5 text-emerald-400" />
-              Check-in Progress
+              Live Check-in Progress
             </h2>
             <p className="text-xs text-purple-300/70 mt-0.5">
-              {stats?.checkedIn || 0} of {stats?.totalRegistrations || 38} participants verified present
+              {liveStats.checkedIn} of {liveStats.totalRegistrations} participants verified present ({liveStats.remaining} remaining)
             </p>
           </div>
           <div className="text-right">
             <span className="text-2xl font-black text-emerald-400">
-              {stats?.totalRegistrations ? Math.round(((stats.checkedIn || 0) / stats.totalRegistrations) * 100) : 0}%
+              {liveStats.totalRegistrations ? Math.round((liveStats.checkedIn / liveStats.totalRegistrations) * 100) : 0}%
             </span>
-            <span className="text-xs text-purple-400/80 block">Completed</span>
+            <span className="text-xs text-purple-400/80 block">Attendance Rate</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-dark-950 h-3 rounded-full overflow-hidden border border-purple-900/50 p-0.5">
+        <div className="w-full bg-dark-950 h-3.5 rounded-full overflow-hidden border border-purple-900/50 p-0.5">
           <div
             className="bg-gradient-to-r from-purple-600 via-indigo-500 to-emerald-400 h-full rounded-full transition-all duration-700 shadow-glow-green"
             style={{
-              width: `${stats?.totalRegistrations ? ((stats.checkedIn || 0) / stats.totalRegistrations) * 100 : 0}%`,
+              width: `${liveStats.totalRegistrations ? (liveStats.checkedIn / liveStats.totalRegistrations) * 100 : 0}%`,
             }}
           />
         </div>
@@ -468,31 +518,56 @@ export default function AdminDashboard() {
                 </tbody>
               </table>
             ) : (
-              <div className="p-12 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-glow-green">
-                  <UserCheck className="w-8 h-8" />
+              <div className="p-8 sm:p-12 text-center space-y-4">
+                <div className="w-14 h-14 rounded-full bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-glow-green">
+                  <UserCheck className="w-7 h-7" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">No Attendees Checked In Yet</h3>
                   <p className="text-xs text-purple-300/70 max-w-md mx-auto mt-1">
-                    When passes are scanned using the Entry Scanner or quick-verified at the desk, attendees will appear here in real time.
+                    Passes scanned on the Entry Scanner will appear here immediately. You can also click "Check In" on any participant below:
                   </p>
                 </div>
-                <div className="flex items-center justify-center gap-3 pt-2">
+
+                {/* Quick Check-in Preview from Awaiting List */}
+                <div className="max-w-2xl mx-auto text-left pt-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-purple-900/40 text-xs font-bold text-purple-300">
+                    <span>Awaiting Attendees ({awaitingAttendees.length})</span>
+                    <button
+                      onClick={() => setActiveTab('awaiting')}
+                      className="text-purple-400 hover:text-white underline text-xs"
+                    >
+                      View All Awaiting &rarr;
+                    </button>
+                  </div>
+                  <div className="divide-y divide-purple-900/30 max-h-60 overflow-y-auto">
+                    {awaitingAttendees.slice(0, 6).map((a) => (
+                      <div key={a.ticketId} className="flex items-center justify-between py-2 px-1">
+                        <div>
+                          <div className="font-bold text-white text-xs">{a.participantName}</div>
+                          <div className="text-[10px] text-purple-300/60 font-mono">{a.ticketId} &bull; {a.course}</div>
+                        </div>
+                        <button
+                          onClick={() => handleQuickCheckin(a)}
+                          disabled={actionLoadingId === a.ticketId}
+                          className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>{actionLoadingId === a.ticketId ? 'Checking...' : 'Check In'}</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2">
                   <Link
                     to="/scanner"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-glow-purple"
                   >
                     <ScanLine className="w-4 h-4" />
-                    <span>Open Entry Scanner</span>
+                    <span>Launch Pass Scanner</span>
                   </Link>
-                  <button
-                    onClick={() => setActiveTab('awaiting')}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-700/40"
-                  >
-                    <Users className="w-4 h-4" />
-                    <span>View Awaiting List</span>
-                  </button>
                 </div>
               </div>
             )}
@@ -601,10 +676,10 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => handleQuickCheckin(ticket)}
                             disabled={actionLoadingId === ticket.ticketId}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
+                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>{actionLoadingId === ticket.ticketId ? 'Checking in...' : 'Mark Present'}</span>
+                            <span>{actionLoadingId === ticket.ticketId ? 'Checking...' : 'Check In'}</span>
                           </button>
                         </div>
                       </td>
@@ -644,19 +719,19 @@ export default function AdminDashboard() {
                     {/* Attendance Status */}
                     <td className="py-3.5 px-4 sm:px-6">
                       {ticket.checkedIn ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950/70 text-emerald-300 border border-emerald-500/40">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 shadow-sm">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          PRESENT
+                          <span>PRESENT</span>
                         </span>
                       ) : ticket.status === 'CANCELLED' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-950/70 text-rose-300 border border-rose-500/40">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-500/50">
                           <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                          CANCELLED
+                          <span>CANCELLED</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-950/70 text-amber-300 border border-amber-500/40">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-500/50">
                           <Clock className="w-3.5 h-3.5 text-amber-400" />
-                          ABSENT
+                          <span>AWAITING</span>
                         </span>
                       )}
                     </td>
@@ -717,9 +792,10 @@ export default function AdminDashboard() {
                           <button
                             onClick={() => handleQuickCheckin(ticket)}
                             disabled={actionLoadingId === ticket.ticketId}
-                            className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
+                            className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
                           >
-                            Check In
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>Check In</span>
                           </button>
                         )}
                       </div>
