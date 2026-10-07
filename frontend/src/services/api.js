@@ -62,10 +62,20 @@ export const api = {
   getStats: async () => {
     try {
       const data = await request('/dashboard/stats');
+      const localStats = localAttendanceStore.getStats();
       if (data && typeof data === 'object' && typeof data.totalRegistrations === 'number') {
-        return data;
+        return {
+          ...localStats,
+          ...data,
+          recentCheckins: Array.isArray(data.recentCheckins) && data.recentCheckins.length > 0 
+            ? data.recentCheckins 
+            : localStats.recentCheckins,
+          checkedInAttendees: localStats.checkedInAttendees,
+          awaitingAttendees: localStats.awaitingAttendees,
+          allAttendees: localStats.allAttendees,
+        };
       }
-      return localAttendanceStore.getStats();
+      return localStats;
     } catch {
       return localAttendanceStore.getStats();
     }

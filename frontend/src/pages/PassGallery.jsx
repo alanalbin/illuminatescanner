@@ -38,6 +38,13 @@ export default function PassGallery() {
 
   useEffect(() => {
     fetchTickets();
+    const handleUpdate = () => fetchTickets();
+    window.addEventListener('illuminate_attendance_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('illuminate_attendance_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
   }, []);
 
   const handleCopy = (ticketId) => {

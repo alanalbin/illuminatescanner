@@ -49,6 +49,16 @@ export default function TicketList() {
     return () => clearTimeout(timer);
   }, [search, statusFilter]);
 
+  useEffect(() => {
+    const handleUpdate = () => fetchTickets();
+    window.addEventListener('illuminate_attendance_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('illuminate_attendance_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
+
   const handleManualCheckin = async (ticket) => {
     if (!window.confirm(`Mark ${ticket.participantName} (${ticket.ticketId}) as CHECKED-IN?`)) return;
     setActionLoading(ticket.ticketId);

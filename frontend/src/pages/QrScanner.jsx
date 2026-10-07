@@ -450,9 +450,17 @@ export default function QrScanner() {
                 onClick={handleScanAgain}
                 className="w-full py-2.5 rounded-xl font-bold text-sm bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple transition-all flex items-center justify-center gap-2"
               >
-                <span>Scan Next Ticket</span>
+                <span>Scan Next Pass</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
+
+              <Link
+                to="/attendance"
+                className="w-full py-2 rounded-xl font-semibold text-xs bg-dark-900/80 hover:bg-purple-950 text-purple-200 border border-purple-700/50 transition-all flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>View in Live Attendance Desk ({stats.checkedIn} Present)</span>
+              </Link>
             </div>
 
           </div>
@@ -491,7 +499,7 @@ export default function QrScanner() {
       </div>
 
       {/* Bottom Live Gate Counters */}
-      {/* 23 Registered | 17 Checked In | 6 Remaining */}
+      {/* 38 Registered | X Checked In | Y Remaining */}
       <div className="p-3.5 rounded-2xl glass-panel border border-purple-500/20 shadow-md">
         <div className="grid grid-cols-3 divide-x divide-purple-900/50 text-center">
           <div>
@@ -519,6 +527,13 @@ export default function QrScanner() {
             </span>
           </div>
         </div>
+        <Link
+          to="/attendance"
+          className="flex items-center justify-center gap-1.5 pt-2.5 mt-2.5 border-t border-purple-900/40 text-xs font-semibold text-purple-300 hover:text-white transition-colors"
+        >
+          <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span>View Live Attendance Roster ({stats.checkedIn} Present) &rarr;</span>
+        </Link>
       </div>
 
     </div>

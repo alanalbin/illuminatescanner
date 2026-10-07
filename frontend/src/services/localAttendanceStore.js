@@ -57,9 +57,22 @@ function loadTickets() {
   return initial;
 }
 
+function dispatchAttendanceUpdate(detail = {}) {
+  if (typeof window !== 'undefined') {
+    try {
+      window.dispatchEvent(new CustomEvent('illuminate_attendance_updated', { detail }));
+      // Also update timestamp to notify other tabs/windows
+      safeStorage.setItem('illuminate_last_sync_timestamp', String(Date.now()));
+    } catch (e) {
+      console.warn('Sync dispatch error:', e);
+    }
+  }
+}
+
 function saveTickets(tickets) {
   try {
     safeStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
+    dispatchAttendanceUpdate({ type: 'tickets_updated', count: tickets.length });
   } catch (e) {
     console.error('Failed to save local attendees:', e);
   }
@@ -76,7 +89,8 @@ function loadLogs() {
 
 function saveLogs(logs) {
   try {
-    safeStorage.setItem(LOGS_KEY, JSON.stringify(logs.slice(0, 50)));
+    safeStorage.setItem(LOGS_KEY, JSON.stringify(logs.slice(0, 100)));
+    dispatchAttendanceUpdate({ type: 'logs_updated', count: logs.length });
   } catch (e) {
     console.error('Failed to save logs:', e);
   }
@@ -243,18 +257,33 @@ export const localAttendanceStore = {
   getStats: () => {
     const tickets = loadTickets();
     const total = tickets.length;
-    const checkedIn = tickets.filter(t => t.checkedIn).length;
-    const remaining = Math.max(0, total - checkedIn);
+    const checkedInTickets = tickets.filter(t => t.checkedIn);
+    const checkedIn = checkedInTickets.length;
+    const cancelled = tickets.filter(t => t.status === 'CANCELLED').length;
+    const remaining = Math.max(0, total - checkedIn - cancelled);
     const logs = loadLogs();
+    const invalidAttempts = logs.filter(l => l.result === 'INVALID' || l.status === 'INVALID').length;
+
+    const sortedCheckedIn = [...checkedInTickets].sort((a, b) => {
+      const timeA = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0;
+      const timeB = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0;
+      return timeB - timeA;
+    });
 
     return {
       totalRegistrations: total,
       checkedIn,
       remaining,
-      invalidScans: 0,
+      cancelled,
+      invalidAttempts,
+      invalidScans: invalidAttempts,
       qrGenerated: total,
       checkinPercentage: total > 0 ? Math.round((checkedIn / total) * 1000) / 10 : 0,
-      recentActivity: logs.slice(0, 10),
+      recentActivity: logs.slice(0, 50),
+      recentCheckins: logs.slice(0, 50),
+      checkedInAttendees: sortedCheckedIn,
+      awaitingAttendees: tickets.filter(t => !t.checkedIn && t.status !== 'CANCELLED'),
+      allAttendees: tickets,
     };
   },
 
@@ -319,6 +348,18 @@ export const localAttendanceStore = {
     const ticket = findAttendee(tickets, qrContent);
 
     if (!ticket) {
+      const logs = loadLogs();
+      logs.unshift({
+        id: Date.now(),
+        ticketId: qrContent ? String(qrContent).slice(0, 32) : 'UNKNOWN',
+        participantName: 'Unregistered Pass',
+        status: 'INVALID',
+        result: 'INVALID',
+        scannedAt: new Date().toISOString(),
+        scannedBy,
+      });
+      saveLogs(logs);
+
       return {
         valid: false,
         success: false,
@@ -331,6 +372,18 @@ export const localAttendanceStore = {
     const ticketIndex = tickets.findIndex(t => t.ticketId === ticket.ticketId);
 
     if (ticket.status === 'CANCELLED') {
+      const logs = loadLogs();
+      logs.unshift({
+        id: Date.now(),
+        ticketId: ticket.ticketId,
+        participantName: ticket.participantName,
+        status: 'CANCELLED',
+        result: 'CANCELLED',
+        scannedAt: new Date().toISOString(),
+        scannedBy,
+      });
+      saveLogs(logs);
+
       return {
         valid: false,
         success: false,
@@ -348,6 +401,19 @@ export const localAttendanceStore = {
       const timeStr = ticket.checkedInAt 
         ? new Date(ticket.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
         : '--:--';
+
+      const logs = loadLogs();
+      logs.unshift({
+        id: Date.now(),
+        ticketId: ticket.ticketId,
+        participantName: ticket.participantName,
+        status: 'ALREADY_USED',
+        result: 'ALREADY_USED',
+        scannedAt: new Date().toISOString(),
+        scannedBy,
+      });
+      saveLogs(logs);
+
       return {
         valid: false,
         success: false,
@@ -378,6 +444,7 @@ export const localAttendanceStore = {
       ticketId: ticket.ticketId,
       participantName: ticket.participantName,
       status: 'SUCCESS',
+      result: 'SUCCESS',
       scannedAt: now,
       scannedBy,
     });
@@ -414,6 +481,18 @@ export const localAttendanceStore = {
 
     tickets[ticketIndex] = ticket;
     saveTickets(tickets);
+
+    const logs = loadLogs();
+    logs.unshift({
+      id: Date.now(),
+      ticketId: ticket.ticketId,
+      participantName: ticket.participantName,
+      status: 'UNDO_CHECKIN',
+      result: 'UNDO',
+      scannedAt: new Date().toISOString(),
+      scannedBy: 'Admin Desk',
+    });
+    saveLogs(logs);
 
     return ticket;
   },
