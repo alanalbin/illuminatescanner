@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../services/api';
+import { localAttendanceStore } from '../services/localAttendanceStore';
 import { Link } from 'react-router-dom';
 import { 
   QrCode, 
@@ -17,31 +18,43 @@ import {
 } from 'lucide-react';
 
 export default function PassGallery() {
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState(() => localAttendanceStore.getTickets());
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('ALL');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
-  const fetchTickets = async () => {
+  const debounceRef = useRef(null);
+
+  const fetchTickets = async (isSilent = true) => {
+    if (!isSilent && tickets.length === 0) setLoading(true);
     try {
       const data = await api.getTickets();
-      setTickets(Array.isArray(data) ? data : []);
+      if (Array.isArray(data) && data.length > 0) {
+        setTickets(data);
+      } else {
+        setTickets(localAttendanceStore.getTickets());
+      }
     } catch (e) {
-      console.error(e);
-      setTickets([]);
+      setTickets(localAttendanceStore.getTickets());
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTickets();
-    const handleUpdate = () => fetchTickets();
+    fetchTickets(true);
+    const handleUpdate = () => {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        fetchTickets(true);
+      }, 200);
+    };
     window.addEventListener('illuminate_attendance_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
+      clearTimeout(debounceRef.current);
       window.removeEventListener('illuminate_attendance_updated', handleUpdate);
       window.removeEventListener('storage', handleUpdate);
     };

@@ -2,12 +2,22 @@ import { localAttendanceStore } from './localAttendanceStore';
 
 const API_BASE = '/api';
 
+// On Vercel or static deployment, avoid making failing network requests to backend
+const isStaticHosting = typeof window !== 'undefined' && 
+  (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('github.io'));
+
+let isBackendAvailable = !isStaticHosting;
+
 function getAuthHeader() {
   const token = localStorage.getItem('illuminate_token');
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
 async function request(endpoint, options = {}) {
+  if (!isBackendAvailable) {
+    throw new Error('Static host mode: local database active');
+  }
+
   const url = `${API_BASE}${endpoint}`;
   const headers = {
     ...getAuthHeader(),
@@ -18,29 +28,35 @@ async function request(endpoint, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
-  const res = await fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+    });
 
-  if (!res.ok) {
-    let errorMsg = `Request failed: ${res.status}`;
-    try {
-      const errorData = await res.json();
-      errorMsg = errorData.message || errorData.error || errorMsg;
-    } catch {
-      // not JSON
+    if (!res.ok) {
+      let errorMsg = `Request failed: ${res.status}`;
+      try {
+        const errorData = await res.json();
+        errorMsg = errorData.message || errorData.error || errorMsg;
+      } catch {}
+      throw new Error(errorMsg);
     }
-    throw new Error(errorMsg);
-  }
 
-  const contentType = res.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    return await res.json();
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      isBackendAvailable = true;
+      return await res.json();
+    }
+    // If we received HTML, backend is not mounted at /api
+    isBackendAvailable = false;
+    throw new Error(`Non-JSON response received: ${contentType || 'text/html'}`);
+  } catch (err) {
+    if (String(err).includes('Failed to fetch') || String(err).includes('NetworkError') || String(err).includes('Non-JSON')) {
+      isBackendAvailable = false;
+    }
+    throw err;
   }
-  // When running on static/SPA hosting (like Vercel), unknown /api calls return index.html (200 text/html)
-  // Throw an error so callers cleanly fall back to localAttendanceStore!
-  throw new Error(`Non-JSON response received: ${contentType || 'text/html'}`);
 }
 
 export const api = {

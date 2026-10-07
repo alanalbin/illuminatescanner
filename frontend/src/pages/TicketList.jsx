@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../services/api';
+import { localAttendanceStore } from '../services/localAttendanceStore';
 import QrModal from '../components/QrModal';
 import ManualTicketModal from '../components/ManualTicketModal';
 import ImportModal from '../components/ImportModal';
@@ -20,8 +21,8 @@ import {
 } from 'lucide-react';
 
 export default function TicketList() {
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tickets, setTickets] = useState(() => localAttendanceStore.getTickets());
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [selectedQrTicket, setSelectedQrTicket] = useState(null);
@@ -29,13 +30,18 @@ export default function TicketList() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
 
-  const fetchTickets = async () => {
-    setLoading(true);
+  const debounceRef = useRef(null);
+
+  const fetchTickets = async (isSilent = true) => {
+    if (!isSilent && tickets.length === 0) setLoading(true);
     try {
       const data = await api.getTickets(search, statusFilter);
-      setTickets(Array.isArray(data) ? data : []);
+      if (Array.isArray(data) && data.length > 0) {
+        setTickets(data);
+      } else {
+        setTickets(localAttendanceStore.getTickets(search, statusFilter));
+      }
     } catch (err) {
-      console.error('Failed to fetch tickets:', err);
       setTickets(localAttendanceStore.getTickets(search, statusFilter));
     } finally {
       setLoading(false);
@@ -43,14 +49,20 @@ export default function TicketList() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchTickets();
-    }, 250);
-    return () => clearTimeout(timer);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchTickets(true);
+    }, 150);
+    return () => clearTimeout(debounceRef.current);
   }, [search, statusFilter]);
 
   useEffect(() => {
-    const handleUpdate = () => fetchTickets();
+    const handleUpdate = () => {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        fetchTickets(true);
+      }, 200);
+    };
     window.addEventListener('illuminate_attendance_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
+import { localAttendanceStore } from '../services/localAttendanceStore';
 import StatsCards from '../components/StatsCards';
 import ManualTicketModal from '../components/ManualTicketModal';
 import ImportModal from '../components/ImportModal';
@@ -30,9 +31,9 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState(null);
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(() => localAttendanceStore.getStats());
+  const [tickets, setTickets] = useState(() => localAttendanceStore.getTickets());
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
