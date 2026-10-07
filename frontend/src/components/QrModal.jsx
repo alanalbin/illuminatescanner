@@ -82,13 +82,15 @@ export default function QrModal({ ticket, onClose }) {
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2.5">
-          <button
-            onClick={handleDownload}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-semibold text-sm bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple transition-all"
+          <a
+            href={`/passes/${ticket.ticketId}.png`}
+            download={`ILLUMINATE_Pass_${ticket.participantName ? ticket.participantName.replace(/\s+/g, '_') : 'Pass'}_${ticket.ticketId}.png`}
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md transition-all text-center"
           >
             <Download className="w-4 h-4" />
-            <span>Download High-Res QR</span>
-          </button>
+            <span>Download Official Pass (HD)</span>
+          </a>
+
           <a
             href={`/ticket/${ticket.ticketId}`}
             target="_blank"

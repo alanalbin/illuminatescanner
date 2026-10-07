@@ -173,19 +173,19 @@ export default function PassGallery() {
               )}
             </div>
 
-            {/* QR Code Container (High-Contrast White Background for fast camera scanning) */}
-            <div className="flex flex-col items-center my-2">
-              <div className="p-3 bg-white rounded-2xl shadow-xl border-2 border-purple-300/20 transition-transform hover:scale-105 duration-200">
+            {/* Official Pass Preview with Scannable QR and Ticket ID */}
+            <div className="my-2 rounded-xl overflow-hidden border border-purple-500/30 bg-[#05030a] shadow-md group">
+              <Link to={`/ticket/${t.ticketId}`} target="_blank" className="block relative overflow-hidden">
                 <img
-                  src={`/qrcodes/${t.ticketId}.png`}
-                  alt={`QR for ${t.participantName}`}
-                  className="w-36 h-36 object-contain"
+                  src={`/passes/${t.ticketId}.png`}
+                  alt={`Official Pass for ${t.participantName}`}
+                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = `/qrcodes/${t.ticketId}.png`;
+                  }}
                 />
-              </div>
-              <span className="text-[10px] text-purple-300/60 mt-2 font-mono">
-                Scan with phone camera
-              </span>
+              </Link>
             </div>
 
             {/* Participant Details */}
@@ -217,13 +217,13 @@ export default function PassGallery() {
             {/* Action Buttons */}
             <div className="mt-4 pt-3 border-t border-purple-900/30 flex items-center justify-between gap-2">
               <a
-                href={`/qrcodes/${t.ticketId}.png`}
-                download={`${t.participantName}_QR_${t.ticketId}.png`}
-                className="flex items-center gap-1 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors py-1 px-2 rounded-lg hover:bg-purple-900/30"
-                title="Download QR image"
+                href={`/passes/${t.ticketId}.png`}
+                download={`ILLUMINATE_Pass_${t.participantName.replace(/\s+/g, '_')}_${t.ticketId}.png`}
+                className="flex items-center gap-1 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors py-1 px-2.5 rounded-lg bg-purple-950/60 border border-purple-800/40 hover:bg-purple-900/50"
+                title="Download Official Pass"
               >
                 <Download className="w-3.5 h-3.5 text-purple-400" />
-                <span>Save</span>
+                <span>Pass (HD)</span>
               </a>
 
               <Link
@@ -232,7 +232,7 @@ export default function PassGallery() {
                 className="flex items-center gap-1 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors py-1 px-2 rounded-lg hover:bg-purple-900/30"
               >
                 <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
-                <span>Pass</span>
+                <span>Open</span>
               </Link>
 
               {!t.checkedIn && (

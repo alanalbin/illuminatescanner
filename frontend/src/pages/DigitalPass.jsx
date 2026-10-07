@@ -84,11 +84,20 @@ export default function DigitalPass() {
   };
 
   const handleDownloadPass = async () => {
+    if (ticket?.ticketId) {
+      const a = document.createElement('a');
+      a.href = `/passes/${ticket.ticketId}.png`;
+      a.download = `ILLUMINATE_Pass_${ticket.participantName ? ticket.participantName.replace(/\s+/g, '_') : 'Pass'}_${ticket.ticketId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
     if (!passCardRef.current) return;
     setDownloading(true);
     try {
       const canvas = await html2canvas(passCardRef.current, {
-        scale: 2.5, // High-res capture
+        scale: 2.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#080511',
@@ -96,7 +105,7 @@ export default function DigitalPass() {
       const image = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = image;
-      a.download = `ILLUMINATE_Pass_${ticket?.ticketId || 'Pass'}_${activeSide}.png`;
+      a.download = `ILLUMINATE_Pass_${ticket?.ticketId || 'Pass'}.png`;
       a.click();
     } catch (err) {
       console.error('Download error:', err);

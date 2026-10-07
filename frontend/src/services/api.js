@@ -99,12 +99,14 @@ export const api = {
         phone: ticket.phone,
         status: ticket.status,
         checkedIn: ticket.checkedIn,
-        checkedInAt: ticket.checkedInAt,
+        college: ticket.college || 'KMCT College of Engineering, Kasaragod',
+        course: ticket.course || 'Engineering',
+        passImageUrl: `/passes/${ticket.ticketId}.png`,
         eventName: 'ILLUMINATE 2026',
         venue: 'KMCT Auditorium',
         qrContent: typeof window !== 'undefined' 
           ? `${window.location.origin}/ticket/${ticket.ticketId}`
-          : `http://localhost:5173/ticket/${ticket.ticketId}`,
+          : `https://illuminatescanner.vercel.app/ticket/${ticket.ticketId}`,
       };
     }
   },
