@@ -29,9 +29,12 @@ export default function AdminDashboard() {
     if (!isSilent) setRefreshing(true);
     try {
       const data = await api.getStats();
-      setStats(data);
+      if (data && typeof data === 'object') {
+        setStats(data);
+      }
     } catch (err) {
       console.error('Failed to load dashboard stats:', err);
+      setStats(localAttendanceStore.getStats());
     } finally {
       setLoading(false);
       setRefreshing(false);

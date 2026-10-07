@@ -34,21 +34,25 @@ async function request(endpoint, options = {}) {
     throw new Error(errorMsg);
   }
 
-  const contentType = res.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
     return await res.json();
   }
-  return res;
+  // When running on static/SPA hosting (like Vercel), unknown /api calls return index.html (200 text/html)
+  // Throw an error so callers cleanly fall back to localAttendanceStore!
+  throw new Error(`Non-JSON response received: ${contentType || 'text/html'}`);
 }
 
 export const api = {
   // Auth (backward compatible stub)
   login: async (username, password) => {
     try {
-      return await request('/auth/login', {
+      const data = await request('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password }),
       });
+      if (data && data.token) return data;
+      return { token: 'guest_token', username: 'volunteer', name: 'Attendance Desk', role: 'VOLUNTEER' };
     } catch {
       return { token: 'guest_token', username: 'volunteer', name: 'Attendance Desk', role: 'VOLUNTEER' };
     }
@@ -57,7 +61,11 @@ export const api = {
   // Dashboard Stats
   getStats: async () => {
     try {
-      return await request('/dashboard/stats');
+      const data = await request('/dashboard/stats');
+      if (data && typeof data === 'object' && typeof data.totalRegistrations === 'number') {
+        return data;
+      }
+      return localAttendanceStore.getStats();
     } catch {
       return localAttendanceStore.getStats();
     }
@@ -70,7 +78,9 @@ export const api = {
       if (query) params.append('query', query);
       if (status && status !== 'ALL') params.append('status', status);
       const qs = params.toString() ? `?${params.toString()}` : '';
-      return await request(`/tickets${qs}`);
+      const data = await request(`/tickets${qs}`);
+      if (Array.isArray(data)) return data;
+      return localAttendanceStore.getTickets(query, status);
     } catch {
       return localAttendanceStore.getTickets(query, status);
     }
@@ -204,7 +214,9 @@ export const api = {
   // Scan history
   getCheckins: async () => {
     try {
-      return await request('/checkins');
+      const data = await request('/checkins');
+      if (Array.isArray(data)) return data;
+      return localAttendanceStore.getCheckins();
     } catch {
       return localAttendanceStore.getCheckins();
     }

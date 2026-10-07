@@ -210,6 +210,9 @@ export function findAttendee(tickets, rawInput) {
 export const localAttendanceStore = {
   getTickets: (query = '', status = '') => {
     let tickets = loadTickets();
+    if (!Array.isArray(tickets)) {
+      tickets = INITIAL_ATTENDEES.map(t => ({ ...t }));
+    }
     if (query) {
       const q = query.toLowerCase().trim();
       tickets = tickets.filter(t => 

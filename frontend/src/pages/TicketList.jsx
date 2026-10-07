@@ -33,9 +33,10 @@ export default function TicketList() {
     setLoading(true);
     try {
       const data = await api.getTickets(search, statusFilter);
-      setTickets(data);
+      setTickets(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch tickets:', err);
+      setTickets(localAttendanceStore.getTickets(search, statusFilter));
     } finally {
       setLoading(false);
     }
@@ -185,12 +186,12 @@ export default function TicketList() {
                 <tr>
                   <td colSpan="6" className="py-12 text-center text-purple-400 text-sm">
                     <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-purple-400" />
-                    Loading tickets from MySQL...
+                    Loading tickets...
                   </td>
                 </tr>
-              ) : tickets.length > 0 ? (
+              ) : (Array.isArray(tickets) && tickets.length > 0) ? (
                 tickets.map((t) => (
-                  <tr key={t.id} className="hover:bg-purple-900/10 transition-colors">
+                  <tr key={t.ticketId || t.id} className="hover:bg-purple-900/10 transition-colors">
                     {/* Ticket ID */}
                     <td className="py-3.5 px-4 sm:px-6">
                       <span className="font-mono text-xs font-bold text-purple-200 bg-purple-950/80 px-2.5 py-1 rounded-md border border-purple-800/40">

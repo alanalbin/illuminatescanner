@@ -27,9 +27,10 @@ export default function PassGallery() {
   const fetchTickets = async () => {
     try {
       const data = await api.getTickets();
-      setTickets(data);
+      setTickets(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
+      setTickets([]);
     } finally {
       setLoading(false);
     }
@@ -58,7 +59,9 @@ export default function PassGallery() {
     }
   };
 
-  const filteredTickets = tickets.filter(t => {
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
+
+  const filteredTickets = safeTickets.filter(t => {
     const q = search.toLowerCase();
     const matchesSearch = !search || 
       t.participantName?.toLowerCase().includes(q) ||
@@ -72,7 +75,7 @@ export default function PassGallery() {
     return true;
   });
 
-  const checkedInCount = tickets.filter(t => t.checkedIn).length;
+  const checkedInCount = safeTickets.filter(t => t.checkedIn).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
