@@ -81,7 +81,7 @@ export const api = {
       const data = await request('/dashboard/stats');
       if (data && typeof data === 'object' && typeof data.totalRegistrations === 'number') {
         const mergedCheckedIn = Math.max(localStats.checkedIn || 0, data.checkedIn || 0);
-        const total = Math.max(localStats.totalRegistrations || 50, data.totalRegistrations || 50);
+        const total = Math.max(localStats.totalRegistrations || 51, data.totalRegistrations || 51);
         return {
           ...data,
           totalRegistrations: total,
@@ -240,13 +240,13 @@ export const api = {
   },
 
   undoCheckin: async (ticketId) => {
-    try {
-      return await request(`/tickets/${encodeURIComponent(ticketId)}/undo-checkin`, {
-        method: 'POST',
-      });
-    } catch {
-      return localAttendanceStore.undoCheckin(ticketId);
-    }
+    // Immediate local store update and event broadcast for zero latency
+    const localRes = localAttendanceStore.undoCheckin(ticketId);
+    // Non-blocking background sync if backend is active
+    request(`/tickets/${encodeURIComponent(ticketId)}/undo-checkin`, {
+      method: 'POST',
+    }).catch(() => {});
+    return localRes;
   },
 
   cancelTicket: async (ticketId) => {

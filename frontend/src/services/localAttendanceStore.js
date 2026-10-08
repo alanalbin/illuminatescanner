@@ -260,7 +260,7 @@ export const localAttendanceStore = {
 
   getStats: () => {
     const tickets = loadTickets();
-    const total = Math.max(tickets.length, 50);
+    const total = Math.max(tickets.length, 51);
     const checkedInTickets = tickets.filter(t => t.checkedIn);
     const checkedIn = checkedInTickets.length;
     const cancelled = tickets.filter(t => t.status === 'CANCELLED').length;
