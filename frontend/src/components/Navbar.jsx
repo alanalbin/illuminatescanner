@@ -94,7 +94,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 text-[11px] shrink-0 ml-auto">
             <div className="hidden md:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-purple-950/60 border border-purple-800/40 text-purple-200">
               <MapPin className="w-3 h-3 text-purple-400" />
-              <span>20 Oct 2026 &bull; KMCT Kasaragod</span>
+              <span>22 Oct 2026 &bull; KMCT Kasaragod</span>
             </div>
 
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/50 border border-emerald-800/40 text-[10px] font-bold text-emerald-300">

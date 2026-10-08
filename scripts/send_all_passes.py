@@ -119,7 +119,7 @@ def create_email_html(attendee, has_inline_image=False):
                         <p style="margin:0 0 12px 0;font-family:monospace;font-size:17px;color:#38bdf8;font-weight:bold;letter-spacing:1px;">{ticket_id}</p>
                         <table width="100%" cellpadding="3" cellspacing="0" style="color:#cbd5e1;font-size:13px;line-height:1.5;">
                           <tr><td width="30%"><strong>Participant:</strong></td><td>{name}</td></tr>
-                          <tr><td><strong>Date:</strong></td><td><span style="color:#facc15;font-weight:bold;">20th October 2026</span></td></tr>
+                          <tr><td><strong>Date:</strong></td><td><span style="color:#facc15;font-weight:bold;">22nd October 2026</span></td></tr>
                           <tr><td><strong>Timing:</strong></td><td>10:00 a.m. to 4:00 p.m.</td></tr>
                           <tr><td><strong>Venue:</strong></td><td>KMCT College of Engineering, Kasaragod (Auditorium)</td></tr>
                           <tr><td><strong>Department:</strong></td><td>{course}</td></tr>

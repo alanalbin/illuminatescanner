@@ -31,15 +31,30 @@ def load_attendees():
     return json.loads(content[start_idx:end_idx])
 
 def create_base_template(src_img):
-    """Creates a reusable base template with blank QR area and blank ticket ID area"""
+    """Creates a reusable base template with 22nd October 2026, blank QR area and blank ticket ID area"""
     W, H = src_img.size[0] * 2, src_img.size[1] * 2
     hd_base = src_img.resize((W, H), Image.Resampling.LANCZOS)
     draw = ImageDraw.Draw(hd_base)
 
-    # 1. Blank out QR box with crisp rounded white rectangle
+    # 1. Update Date from 20th October 2026 to 22nd October 2026
+    glyph_2 = hd_base.crop((1308, 356, 1322, 380))
+    # Erase '0th' with seamless background color
+    draw.rectangle([1322, 350, 1365, 382], fill=(2, 2, 6, 255))
+    # Paste second '2' glyph
+    hd_base.paste(glyph_2, (1323, 356), glyph_2)
+    # Render 'nd' superscript in matching Segoe UI Bold font
+    font_candidates = [
+        r'C:\Windows\Fonts\segoeuib.ttf',
+        r'C:\Windows\Fonts\arialbd.ttf',
+    ]
+    sup_font_path = next((f for f in font_candidates if os.path.exists(f)), None)
+    sup_font = ImageFont.truetype(sup_font_path, 12) if sup_font_path else ImageFont.load_default()
+    draw.text((1339, 355), 'nd', fill=(240, 240, 245, 255), font=sup_font)
+
+    # 2. Blank out QR box with crisp rounded white rectangle
     draw.rounded_rectangle([1674, 294, 1970, 586], radius=28, fill='white')
 
-    # 2. Blank out Ticket ID text inside the pill box with seamless background
+    # 3. Blank out Ticket ID text inside the pill box with seamless background
     draw.rectangle([1670, 712, 1975, 776], fill=(2, 2, 6, 255))
 
     return hd_base
