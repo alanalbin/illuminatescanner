@@ -107,14 +107,14 @@ export default function IlluminateTicketPass({
           />
         ) : (
           /* Dynamic overlay fallback */
-          <div className="relative w-full aspect-[1536/520] bg-[#05030a] overflow-hidden">
+          <div className="relative w-full aspect-[2/1] bg-[#05030a] overflow-hidden">
             <img
               src="/pass-assets/pass_base.png"
               alt="Pass Template"
               className="w-full h-full object-cover"
             />
             {/* Dynamic QR overlay */}
-            <div className="absolute left-[83.1%] top-[28.8%] w-[12.2%] h-[36.2%] flex items-center justify-center bg-white p-1 rounded-sm">
+            <div className="absolute left-[81.7%] top-[28.7%] w-[14.5%] h-[28.5%] flex items-center justify-center bg-white p-1 rounded-sm">
               <QRCodeSVG
                 value={qrValue}
                 size={160}
@@ -123,7 +123,7 @@ export default function IlluminateTicketPass({
               />
             </div>
             {/* Dynamic Ticket ID text overlay */}
-            <div className="absolute left-[82.3%] top-[83.8%] w-[13.8%] flex items-center justify-center pointer-events-none">
+            <div className="absolute left-[82%] top-[70.1%] w-[14.2%] h-[5.5%] flex items-center justify-center pointer-events-none">
               <span className="text-[9px] sm:text-[11px] md:text-[13px] font-mono font-black text-white tracking-wider truncate">
                 {ticketId}
               </span>
