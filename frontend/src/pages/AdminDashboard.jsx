@@ -213,6 +213,23 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Official Organizers & Partners Banner */}
+      <div className="w-full flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.02] border border-purple-500/20 backdrop-blur-md shadow-lg shadow-purple-950/20">
+        <div className="flex items-center gap-2 text-xs font-mono font-bold text-purple-300/80 uppercase tracking-wider">
+          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <span>Organized by IIT Bombay E-Cell & KMCT Kasaragod</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+          <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow brightness-110 hover:scale-105 transition-all" title="E-Cell IIT Bombay" />
+          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
+          <img src="/logos/nec-iitb.png" alt="NEC 2026" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="National Entrepreneurship Challenge 2026" />
+          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
+          <img src="/logos/kmct-college.png" alt="KMCT College" className="h-5 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="KMCT College of Engineering for Emerging Technologies and Management" />
+          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
+          <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="NxT Byte E-Cell" />
+        </div>
+      </div>
+
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-purple-900/40 pb-6">
         <div>

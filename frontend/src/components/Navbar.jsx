@@ -86,6 +86,37 @@ export default function Navbar() {
           })}
         </nav>
 
+        {/* Official Co-Organizing Partners Strip */}
+        <div className="hidden xl:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-purple-500/20 backdrop-blur-md">
+          <img 
+            src="/logos/ecell-iitb.png" 
+            alt="E-Cell IIT Bombay" 
+            className="h-5 w-auto object-contain hover:scale-105 transition-transform brightness-110" 
+            title="E-Cell, IIT Bombay"
+          />
+          <div className="w-px h-3.5 bg-purple-500/30" />
+          <img 
+            src="/logos/nec-iitb.png" 
+            alt="NEC 2026" 
+            className="h-5 w-auto object-contain hover:scale-105 transition-transform" 
+            title="National Entrepreneurship Challenge 2026"
+          />
+          <div className="w-px h-3.5 bg-purple-500/30" />
+          <img 
+            src="/logos/kmct-college.png" 
+            alt="KMCT College" 
+            className="h-4.5 w-auto object-contain hover:scale-105 transition-transform" 
+            title="KMCT College of Engineering for Emerging Technologies and Management"
+          />
+          <div className="w-px h-3.5 bg-purple-500/30" />
+          <img 
+            src="/logos/nxtbyte-ecell.png" 
+            alt="NxT Byte E-Cell" 
+            className="h-5 w-auto object-contain hover:scale-105 transition-transform" 
+            title="Organized by Nxt Byte E-Cell"
+          />
+        </div>
+
         {/* Right Status Badge */}
         <div className="flex items-center gap-3">
           {/* Mobile Quick Scanner */}

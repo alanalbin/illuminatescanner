@@ -114,7 +114,20 @@ public class DataSeeder implements CommandLineRunner {
             new Ticket("ILM-KMCT-MUXJPFS0-797946", "Hisham abdulla", "hishamabdulla269@gmail.com", "7012984673"),
             new Ticket("ILM-KMCT-MUXKIC2D-71EB4E", "Ayshath Shua", "shuaayshath@gmail.com", "7306753675"),
             new Ticket("ILM-KMCT-MUXP4TXM-342433", "ABDULLA P", "abdullabinnizar@gmail.com", "9207370942"),
-            new Ticket("ILM-KMCT-MUXPDNGK-B06807", "Muhammad Rishad kr", "byrishad@gmail.com", "8714661917")
+            new Ticket("ILM-KMCT-MUXPDNGK-B06807", "Muhammad Rishad kr", "byrishad@gmail.com", "8714661917"),
+            new Ticket("ILM-KMCT-MUXZU1HH-3F3DD4", "RIHANA FATHIMA T I", "rihanafathimati@gmail.com", "9744227948"),
+            new Ticket("ILM-KMCT-MUY1DFL7-AEEF85", "RAFEEA K", "rafeearazzak@gmail.com", "8848802069"),
+            new Ticket("ILM-KMCT-MUY2S1KT-9E6B44", "Fathima zuhi", "zuhi44729@gmail.com", "8891122521"),
+            new Ticket("ILM-KMCT-MUY6PAUJ-684B6E", "NAFEESATH NIDHA M H", "nidhanooruddeen@gmail.com", "9995999392"),
+            new Ticket("ILM-KMCT-MUY8L2KJ-21DB05", "Musavvir Mihad", "musavvirmihad8@gmail.com", "7560984654"),
+            new Ticket("ILM-KMCT-MUYBKAIC-3504DE", "zekyath fathima", "zekya007@gmail.com", "8089583662"),
+            new Ticket("ILM-KMCT-MUYD5E77-9A287B", "Fathima st", "yahusami8675@gmail.com", "9496400819"),
+            new Ticket("ILM-KMCT-MUYX02JJ-4F17A0", "Fathima Riza", "rizaibrahim1514@gmail.com", "9895202606"),
+            new Ticket("ILM-KMCT-MUYYMONQ-E7770A", "Diya", "diya66086@gmail.com", "7736279126"),
+            new Ticket("ILM-KMCT-MUYYT88P-E4A85B", "Lulu Fathima", "farorofa424@gmail.com", "9987491849"),
+            new Ticket("ILM-KMCT-MUYYVX55-DFC01F", "Ayishath Thamanna kp", "ayshathamanna05@gmail.com", "8089830340"),
+            new Ticket("ILM-KMCT-MUZ8DT5S-ADEDA4", "Mohammed K N", "mohammed996282@gmail.com", "9526602008"),
+            new Ticket("ILM-KMCT-MUZ9IUZX-83E48B", "Sara Sara", "saraaahuh771@gmail.com", "8891331518")
         );
 
         for (Ticket ticket : officialTickets) {

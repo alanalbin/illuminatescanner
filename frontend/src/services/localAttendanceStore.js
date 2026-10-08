@@ -1,7 +1,7 @@
 import { INITIAL_ATTENDEES } from '../data/attendees.js';
 
-const STORAGE_KEY = 'illuminate_local_attendees_v3';
-const LOGS_KEY = 'illuminate_local_checkin_logs_v3';
+const STORAGE_KEY = 'illuminate_local_attendees_v4';
+const LOGS_KEY = 'illuminate_local_checkin_logs_v4';
 
 const memoryStore = new Map();
 const safeStorage = {
@@ -22,11 +22,13 @@ const safeStorage = {
 
 function loadTickets() {
   try {
-    const raw = safeStorage.getItem(STORAGE_KEY) || safeStorage.getItem('illuminate_local_attendees_v2');
+    const raw = safeStorage.getItem(STORAGE_KEY) || 
+      safeStorage.getItem('illuminate_local_attendees_v3') || 
+      safeStorage.getItem('illuminate_local_attendees_v2');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        // Merge in all 38 attendees
+        // Merge in all 51 attendees
         const existingMap = new Map(parsed.map(t => [t.ticketId.toUpperCase(), t]));
         let modified = false;
         INITIAL_ATTENDEES.forEach(init => {

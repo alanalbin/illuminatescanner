@@ -246,6 +246,17 @@ export default function QrScanner() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex flex-col justify-between max-w-md mx-auto px-4 py-4 relative">
       
+      {/* Official Organizers Logo Strip */}
+      <div className="flex items-center justify-center gap-3 py-1.5 px-3 rounded-2xl bg-white/[0.03] border border-purple-500/20 shadow-md">
+        <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-5 w-auto object-contain brightness-110" title="E-Cell IIT Bombay" />
+        <div className="w-px h-3.5 bg-purple-500/30" />
+        <img src="/logos/nec-iitb.png" alt="NEC 2026" className="h-5 w-auto object-contain" title="National Entrepreneurship Challenge 2026" />
+        <div className="w-px h-3.5 bg-purple-500/30" />
+        <img src="/logos/kmct-college.png" alt="KMCT College" className="h-4 w-auto object-contain" title="KMCT College of Engineering, Kasaragod" />
+        <div className="w-px h-3.5 bg-purple-500/30" />
+        <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-5 w-auto object-contain" title="NxT Byte E-Cell" />
+      </div>
+
       {/* Top Header */}
       <div className="text-center pt-1 pb-3">
         <div className="flex items-center justify-center gap-2">
