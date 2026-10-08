@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 export default function QrScanner() {
-  const [stats, setStats] = useState({ totalRegistrations: 38, checkedIn: 0, remaining: 38 });
+  const [stats, setStats] = useState({ totalRegistrations: 50, checkedIn: 0, remaining: 50 });
   const [scanResult, setScanResult] = useState(null);
   const [isScanning, setIsScanning] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -41,9 +41,9 @@ export default function QrScanner() {
     try {
       const data = await api.getStats();
       setStats({
-        totalRegistrations: data.totalRegistrations || 38,
+        totalRegistrations: data.totalRegistrations || 50,
         checkedIn: data.checkedIn || 0,
-        remaining: data.remaining != null ? data.remaining : 38,
+        remaining: data.remaining != null ? data.remaining : 50,
       });
     } catch (e) {
       console.warn('Stats fetch error:', e);

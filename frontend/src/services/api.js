@@ -81,7 +81,7 @@ export const api = {
       const data = await request('/dashboard/stats');
       if (data && typeof data === 'object' && typeof data.totalRegistrations === 'number') {
         const mergedCheckedIn = Math.max(localStats.checkedIn || 0, data.checkedIn || 0);
-        const total = Math.max(localStats.totalRegistrations || 38, data.totalRegistrations || 38);
+        const total = Math.max(localStats.totalRegistrations || 50, data.totalRegistrations || 50);
         return {
           ...data,
           totalRegistrations: total,
@@ -211,7 +211,7 @@ export const api = {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `illuminate_attendance_38_attendees_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `illuminate_attendance_50_attendees_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

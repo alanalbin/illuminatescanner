@@ -180,7 +180,7 @@ export default function AdminDashboard() {
 
   // Live computed stats for accurate counts
   const liveStats = useMemo(() => {
-    const total = allAttendees.length || stats?.totalRegistrations || 38;
+    const total = allAttendees.length || stats?.totalRegistrations || 50;
     const checkedInCount = checkedInAttendees.length;
     const remainingCount = Math.max(0, total - checkedInCount);
     return {
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                 activeTab === 'all' ? 'bg-purple-800 text-white' : 'bg-purple-900 text-purple-200'
               }`}>
-                {allAttendees.length || 38}
+                {allAttendees.length || 50}
               </span>
             </button>
 

@@ -5,7 +5,7 @@ export default function StatsCards({ stats }) {
   const cards = [
     {
       title: 'Total Registrations',
-      value: stats?.totalRegistrations ?? 38,
+      value: stats?.totalRegistrations ?? 50,
       icon: Users,
       color: 'text-purple-400',
       bgGlow: 'from-purple-600/20 to-purple-900/10',
@@ -14,7 +14,7 @@ export default function StatsCards({ stats }) {
     },
     {
       title: 'QR Generated',
-      value: stats?.qrGenerated ?? 38,
+      value: stats?.qrGenerated ?? 50,
       icon: QrCode,
       color: 'text-indigo-400',
       bgGlow: 'from-indigo-600/20 to-indigo-900/10',
@@ -32,7 +32,7 @@ export default function StatsCards({ stats }) {
     },
     {
       title: 'Remaining',
-      value: stats?.remaining ?? 38,
+      value: stats?.remaining ?? 50,
       icon: Clock,
       color: 'text-amber-400',
       bgGlow: 'from-amber-600/20 to-amber-900/10',
