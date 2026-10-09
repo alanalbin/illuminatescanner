@@ -73,3 +73,47 @@ code, .font-mono {
 ::-webkit-scrollbar-thumb:hover {
   background: #492e85;
 }
+
+/* Custom Scanner & Video Viewport Styles */
+#qr-reader {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  background: #000 !important;
+  overflow: hidden !important;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+#qr-reader__scan_region {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+#qr-reader__scan_region video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+#qr-reader__dashboard_section,
+#qr-reader__dashboard {
+  display: none !important;
+}
+
+#qr-shaded-region {
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}

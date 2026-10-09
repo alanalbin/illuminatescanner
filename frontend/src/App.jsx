@@ -16,7 +16,7 @@ export default function App() {
       <BrowserRouter>
         <div className="min-h-screen bg-dark-950 text-slate-100 selection:bg-purple-600 selection:text-white flex flex-col">
           <Navbar />
-          <main className="flex-1">
+          <main className="flex-1 pb-16 lg:pb-0">
             <Routes>
               {/* Event Day default entry: Pass Scanner */}
               <Route path="/" element={<Navigate to="/scanner" replace />} />
