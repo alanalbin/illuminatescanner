@@ -81,7 +81,7 @@ export const api = {
       const data = await request('/dashboard/stats');
       if (data && typeof data === 'object' && typeof data.totalRegistrations === 'number') {
         const mergedCheckedIn = Math.max(localStats.checkedIn || 0, data.checkedIn || 0);
-        const total = Math.max(localStats.totalRegistrations || 51, data.totalRegistrations || 51);
+        const total = Math.max(localStats.totalRegistrations || 0, data.totalRegistrations || 0);
         return {
           ...data,
           totalRegistrations: total,

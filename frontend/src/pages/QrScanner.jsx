@@ -30,9 +30,9 @@ export default function QrScanner() {
   const [stats, setStats] = useState(() => {
     const s = localAttendanceStore.getStats();
     return {
-      totalRegistrations: s.totalRegistrations || 51,
+      totalRegistrations: s.totalRegistrations || 0,
       checkedIn: s.checkedIn || 0,
-      remaining: s.remaining != null ? s.remaining : 51,
+      remaining: s.remaining != null ? s.remaining : 0,
       checkedInAttendees: s.checkedInAttendees || [],
     };
   });
@@ -63,9 +63,9 @@ export default function QrScanner() {
     try {
       const data = await api.getStats();
       setStats({
-        totalRegistrations: data.totalRegistrations || 51,
+        totalRegistrations: data.totalRegistrations || 0,
         checkedIn: data.checkedIn || 0,
-        remaining: data.remaining != null ? data.remaining : 51,
+        remaining: data.remaining != null ? data.remaining : 0,
         checkedInAttendees: data.checkedInAttendees || [],
       });
     } catch (e) {
@@ -657,7 +657,7 @@ export default function QrScanner() {
                     UNRECOGNIZED PASS
                   </div>
                   <div className="text-[10px] uppercase font-bold tracking-widest text-rose-300">
-                    NOT IN REGISTERED 51 ATTENDEE LIST
+                    NOT IN REGISTERED ATTENDEE LIST
                   </div>
                 </div>
               )}
@@ -782,7 +782,7 @@ export default function QrScanner() {
 
       </div>
 
-      {/* Live Gate Counters (51 Registered | X Checked In | Y Remaining) */}
+      {/* Live Gate Counters (Registered | Checked In | Remaining) */}
       <div className="p-3 rounded-2xl glass-panel border border-purple-500/20 shadow-md">
         <div className="grid grid-cols-3 divide-x divide-purple-900/50 text-center">
           <div>

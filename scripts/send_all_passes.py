@@ -131,22 +131,12 @@ def create_email_html(attendee, has_inline_image=False):
                 </td>
               </tr>
 
-              <!-- CTA Button -->
-              <tr>
-                <td align="center" style="padding-bottom:24px;">
-                  <a href="{pass_url}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#9333ea,#6366f1);color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:14px 32px;border-radius:12px;box-shadow:0 4px 15px rgba(147,51,234,0.4);">
-                    👉 View & Download Digital Pass
-                  </a>
-                  <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Click above to view your real-time scannable QR ticket on any device</p>
-                </td>
-              </tr>
-
               <!-- Event Instructions -->
               <tr>
                 <td style="background:#0a0417;border-radius:12px;padding:16px;border:1px solid #7c3aed20;">
                   <p style="margin:0 0 8px 0;color:#c084fc;font-size:12px;font-weight:bold;text-transform:uppercase;">Important Instructions for Event Day:</p>
                   <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:12px;line-height:1.7;">
-                    <li>Keep this pass or QR code saved on your mobile phone to scan at entry.</li>
+                    <li>Save the attached pass photo on your phone to present at the gate for fast check-in.</li>
                     <li>Collect your official <strong>Illuminate Welcome Kit</strong> at the registration desk.</li>
                     <li>Official Certificates will be awarded by <strong>E-Cell IIT Bombay</strong> upon workshop completion.</li>
                   </ul>
@@ -188,21 +178,48 @@ def build_message(sender, to_email, attendee, pass_file):
         with open(pass_file, 'rb') as f:
             img_data = f.read()
 
-        # Inline visual banner (CID)
+        # Inline visual banner (CID) - serves both as in-body display and downloadable image
         inline_img = MIMEImage(img_data)
         inline_img.add_header('Content-ID', '<pass_banner>')
         inline_img.add_header('Content-Disposition', 'inline', filename=f"ILLUMINATE_Pass_{ticket_id}.png")
         msg.attach(inline_img)
 
-        # Attachment for downloading/printing
-        attach_img = MIMEImage(img_data)
-        attach_img.add_header('Content-Disposition', 'attachment', filename=f"ILLUMINATE_Pass_{ticket_id}.png")
-        msg.attach(attach_img)
-
     return msg
 
-def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False):
+SENT_LOG_FILE = os.path.join(BASE_DIR, 'scripts', '.sent_passes.json')
+
+def load_sent_log():
+    if os.path.exists(SENT_LOG_FILE):
+        try:
+            with open(SENT_LOG_FILE, 'r', encoding='utf-8') as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
+    return set()
+
+def save_sent_log(sent_set):
+    try:
+        with open(SENT_LOG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(list(sent_set), f, indent=2)
+    except Exception as e:
+        print(f"Warning saving sent log: {e}")
+
+def get_smtp_connection(sender, password):
+    last_err = None
+    for attempt in range(4):
+        try:
+            server = smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=60)
+            server.login(sender, password)
+            return server
+        except Exception as e:
+            last_err = e
+            time.sleep(2)
+    raise last_err
+
+def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False, force=False):
     target_list = attendees
+    sent_tickets = load_sent_log() if not test_to else set()
+
     if test_to:
         target_list = [attendees[0]]
         print(f"\n🧪 TEST MODE: Dispatching 1 test pass to '{test_to}' (Sample: {target_list[0]['participantName']})...")
@@ -217,15 +234,16 @@ def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False):
             em = test_to if test_to else a.get('email')
             pass_file = os.path.join(PASSES_DIR, f"{tid}.png")
             exists = "Found HD Pass" if os.path.exists(pass_file) else "Pass PNG Missing"
-            print(f"[{idx+1}/{len(target_list)}] DRY-RUN: {nm} -> {em} ({tid}) [{exists}]")
+            already = " [Already Sent]" if (tid in sent_tickets and not force) else ""
+            print(f"[{idx+1}/{len(target_list)}] DRY-RUN: {nm} -> {em} ({tid}) [{exists}]{already}")
         print("\n✅ Dry run completed successfully! All attendee records and pass files verified.")
         return
 
-    # Real SMTP connection
+    # Real SMTP connection with auto-reconnect
     print(f"Connecting to smtp.gmail.com as {sender}...")
+    server = None
     try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        server.login(sender, password)
+        server = get_smtp_connection(sender, password)
         print("✅ Authenticated with Gmail SMTP successfully!\n")
     except Exception as e:
         print(f"\n❌ Gmail Authentication Error: {e}")
@@ -236,6 +254,7 @@ def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False):
 
     success_count = 0
     fail_count = 0
+    skipped_count = 0
 
     try:
         for idx, a in enumerate(target_list):
@@ -244,6 +263,11 @@ def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False):
             recipient = test_to if test_to else a.get('email')
             pass_file = os.path.join(PASSES_DIR, f"{ticket_id}.png")
 
+            if not force and not test_to and ticket_id in sent_tickets:
+                print(f"[{idx+1}/{len(target_list)}] {name} <{recipient}> ({ticket_id})... ⏭️ SKIPPED (Already Sent)")
+                skipped_count += 1
+                continue
+
             print(f"[{idx+1}/{len(target_list)}] Sending to {name} <{recipient}> ({ticket_id})...", end=" ", flush=True)
 
             if not recipient or '@' not in recipient:
@@ -251,13 +275,33 @@ def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False):
                 fail_count += 1
                 continue
 
-            try:
-                msg = build_message(sender, recipient, a, pass_file)
-                server.sendmail(sender, recipient, msg.as_string())
-                print("✅ SENT")
-                success_count += 1
-            except Exception as ex:
-                print(f"❌ FAILED ({ex})")
+            # Send with retry and auto-reconnect on network drops
+            sent_ok = False
+            for attempt in range(3):
+                try:
+                    if server is None:
+                        server = get_smtp_connection(sender, password)
+                    msg = build_message(sender, recipient, a, pass_file)
+                    server.sendmail(sender, recipient, msg.as_string())
+                    print("✅ SENT")
+                    sent_ok = True
+                    success_count += 1
+                    if not test_to:
+                        sent_tickets.add(ticket_id)
+                        save_sent_log(sent_tickets)
+                    break
+                except Exception as ex:
+                    print(f"⚠️ Retrying (Attempt {attempt+1}, Error: {ex})...", end=" ", flush=True)
+                    try:
+                        if server:
+                            server.close()
+                    except Exception:
+                        pass
+                    server = None
+                    time.sleep(3)
+
+            if not sent_ok:
+                print("❌ FAILED")
                 fail_count += 1
 
             # Brief pacing delay to respect Gmail rate limits
@@ -265,14 +309,25 @@ def send_via_smtp(sender, password, attendees, test_to=None, dry_run=False):
                 time.sleep(1.2)
 
     finally:
-        server.quit()
+        if server:
+            try:
+                server.quit()
+            except Exception:
+                try:
+                    server.close()
+                except Exception:
+                    pass
 
-    print(f"\n🎉 Finished! Dispatched {success_count} passes successfully ({fail_count} failed).")
+    print(f"\n🎉 Finished! Dispatched {success_count} passes successfully ({skipped_count} skipped, {fail_count} failed).")
 
 def main():
     parser = argparse.ArgumentParser(description="ILLUMINATE 2026 Gmail Automated Pass Dispatcher")
     parser.add_argument('--dry-run', action='store_true', help="Simulate email dispatch without sending")
     parser.add_argument('--test-to', type=str, help="Send 1 sample pass to this test email address")
+    parser.add_argument('--new-only', action='store_true', help="Send only to new registered members (attendees 67 to 69)")
+    parser.add_argument('--start-index', type=int, default=1, help="1-based start index in attendee list (default: 1)")
+    parser.add_argument('--end-index', type=int, default=None, help="1-based end index in attendee list")
+    parser.add_argument('--force', action='store_true', help="Force resending even if marked as already sent in log")
     parser.add_argument('--sender', type=str, help="Your Gmail address (e.g. yourname@gmail.com)")
     parser.add_argument('--password', type=str, help="Gmail 16-character App Password")
     args = parser.parse_args()
@@ -281,13 +336,24 @@ def main():
     sender = args.sender or env_sender
     password = args.password or env_pass
 
-    attendees = load_attendees()
-    print(f"Loaded {len(attendees)} registered attendees from attendees.js")
+    all_attendees = load_attendees()
+    print(f"Loaded {len(all_attendees)} total registered attendees from attendees.js")
+
+    # Determine slice
+    start_idx = args.start_index - 1
+    end_idx = args.end_index if args.end_index is not None else len(all_attendees)
+    if args.new_only:
+        start_idx = 66  # 67th attendee onwards (0-indexed 66)
+        end_idx = len(all_attendees)
+        print(f"🎯 Target mode: NEW REGISTERED MEMBERS ONLY (Attendees #{start_idx+1} to #{end_idx})")
+
+    attendees = all_attendees[start_idx:end_idx]
+    print(f"Selected {len(attendees)} attendees for dispatch (Range: #{start_idx+1} to #{end_idx})")
 
     if args.dry_run:
-        send_via_smtp(sender or "sample@gmail.com", None, attendees, test_to=args.test_to, dry_run=True)
+        send_via_smtp(sender or "sample@gmail.com", None, attendees, test_to=args.test_to, dry_run=True, force=args.force)
     elif sender and password:
-        send_via_smtp(sender, password, attendees, test_to=args.test_to, dry_run=False)
+        send_via_smtp(sender, password, attendees, test_to=args.test_to, dry_run=False, force=args.force)
     else:
         print("\n🔑 Gmail Credentials Needed!")
         print("You can run this directly with:")

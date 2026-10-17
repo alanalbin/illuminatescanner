@@ -127,7 +127,26 @@ public class DataSeeder implements CommandLineRunner {
             new Ticket("ILM-KMCT-MUYYT88P-E4A85B", "Lulu Fathima", "farorofa424@gmail.com", "9987491849"),
             new Ticket("ILM-KMCT-MUYYVX55-DFC01F", "Ayishath Thamanna kp", "ayshathamanna05@gmail.com", "8089830340"),
             new Ticket("ILM-KMCT-MUZ8DT5S-ADEDA4", "Mohammed K N", "mohammed996282@gmail.com", "9526602008"),
-            new Ticket("ILM-KMCT-MUZ9IUZX-83E48B", "Sara Sara", "saraaahuh771@gmail.com", "8891331518")
+            new Ticket("ILM-KMCT-MUZ9IUZX-83E48B", "Sara Sara", "saraaahuh771@gmail.com", "8891331518"),
+            new Ticket("ILM-KMCT-MUZC4YKW-538135", "Haleemasadhafa Fazal", "haleemasadhafafazal635@gmail.com", "7510911635"),
+            new Ticket("ILM-KMCT-MUZQZ6QI-235511", "Nidha fathima C L", "latheefchengala5@gmail.com", "7356050473"),
+            new Ticket("ILM-KMCT-MUZR781Q-B0B793", "Ayshath Niha C L", "junaidajunu980@gmail.com", "7356050473"),
+            new Ticket("ILM-KMCT-MV0SOC95-835F6D", "Aysha Fidha B A", "fidhaaysha55@gmail.com", "9995700921"),
+            new Ticket("ILM-KMCT-MV0U59K2-AB1875", "Hiba zainaba", "hibazainaba007@gmail.com", "9292966207"),
+            new Ticket("ILM-KMCT-MV0UBTQ4-CC0984", "Zainaba nuza P S", "umaibasajid@icloud.com", "8136888886"),
+            new Ticket("ILM-KMCT-MV0UG59L-289431", "Aysha jusaina", "ayshajusaina21@gmail.com", "8714122667"),
+            new Ticket("ILM-KMCT-MV10VHSP-EC2286", "Mizhal Marzook", "mizhalmarzook@gmail.com", "9447737958"),
+            new Ticket("ILM-KMCT-MV11GIVQ-AA45D7", "Juzaila sajid", "juzailasajid@gmail.com", "9495966531"),
+            new Ticket("ILM-KMCT-MV1UV443-67BCE3", "Munavvira C. A", "munavvira354@gmail.com", "9074042600"),
+            new Ticket("ILM-KMCT-MV40K9FA-CB8446", "Fouzan Ibrahim", "fouzanibrahim00@gmail.com", "8848123230"),
+            new Ticket("ILM-KMCT-MV4ZUYLO-2DC16F", "BAASIL BASHEER", "baasilbasheer10@gmail.com", "7356991043"),
+            new Ticket("ILM-KMCT-MV61Q1E3-2E2BD8", "Sahirahameed", "sahirahameed171@gmail.com", "6235334423"),
+            new Ticket("ILM-KMCT-MV633J0O-2B185C", "Zainabath Amana", "zainabathamana@gmail.com", "7907436733"),
+            new Ticket("ILM-KMCT-MV635E1I-4286AE", "Fathima Shelbiya", "fathimashelbiya123@gmail.com", "9525222024"),
+            new Ticket("ILM-KMCT-MV7LJ55Z-CDDB44", "Fathima M A", "fathimamihraj9@gmail.com", "8891241604"),
+            new Ticket("ILM-KMCT-MV7TR9PY-464127", "Fathimath Suhara K.A", "pathu3682@gmail.com", "9746847098"),
+            new Ticket("ILM-KMCT-MV7TXGBR-00DC9B", "Fathimath hafra", "fathimathhafra8@gmail.com", "9562774880"),
+            new Ticket("ILM-KMCT-MV7VHGLF-16804B", "Nafeesathul Misiriya M", "nafeesan801@gmail.com", "8330839412")
         );
 
         for (Ticket ticket : officialTickets) {

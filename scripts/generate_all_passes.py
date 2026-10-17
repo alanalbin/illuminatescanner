@@ -131,7 +131,7 @@ def main():
 
         print(f"[{idx+1}/{len(attendees)}] Generated: {tid} ({name})")
 
-    print("\n🎉 All 38 attendee passes generated successfully with the new pass design!")
+    print(f"\n🎉 All {len(attendees)} attendee passes generated successfully with the new pass design!")
 
 if __name__ == '__main__':
     main()

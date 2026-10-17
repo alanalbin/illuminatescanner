@@ -200,7 +200,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1 font-bold">
               <span className="text-emerald-400">{stats.checkedIn}</span>
               <span className="text-purple-400/80">/</span>
-              <span className="text-white">{stats.totalRegistrations || 51}</span>
+              <span className="text-white">{stats.totalRegistrations}</span>
             </div>
             <span className="hidden sm:inline text-purple-300/80 text-[11px] font-medium">Checked In</span>
           </Link>
