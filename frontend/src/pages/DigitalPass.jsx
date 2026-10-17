@@ -27,34 +27,60 @@ export default function DigitalPass() {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [activeSide, setActiveSide] = useState('both'); // 'both' | 'front' | 'back'
+  const [checkinLoading, setCheckinLoading] = useState(false);
   const passCardRef = useRef(null);
 
-  useEffect(() => {
+  const fetchTicket = async (silent = false) => {
     if (!ticketId) return;
-    const fetchTicket = async () => {
-      setLoading(true);
-      try {
-        const data = await api.getTicket(ticketId);
-        setTicket(data);
-      } catch (err) {
-        if (ticketId.toUpperCase() === 'ILL26A7F3' || ticketId.toLowerCase() === 'sample' || ticketId.toLowerCase() === 'demo') {
-          setTicket({
-            ticketId: 'ILL26A7F3',
-            participantName: 'General Attendee',
-            email: 'attendee@illuminate.org',
-            phone: '+91 98765 43210',
-            status: 'ACTIVE',
-            checkedIn: false,
-          });
-        } else {
-          setError(err.message || 'Ticket not found.');
-        }
-      } finally {
-        setLoading(false);
+    if (!silent) setLoading(true);
+    try {
+      const data = await api.getTicket(ticketId);
+      setTicket(data);
+    } catch (err) {
+      if (ticketId.toUpperCase() === 'ILL26A7F3' || ticketId.toLowerCase() === 'sample' || ticketId.toLowerCase() === 'demo') {
+        setTicket({
+          ticketId: 'ILL26A7F3',
+          participantName: 'General Attendee',
+          email: 'attendee@illuminate.org',
+          phone: '+91 98765 43210',
+          status: 'ACTIVE',
+          checkedIn: false,
+        });
+      } else {
+        setError(err.message || 'Ticket not found.');
       }
-    };
+    } finally {
+      if (!silent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchTicket();
+
+    const handleUpdate = () => {
+      fetchTicket(true);
+    };
+
+    window.addEventListener('illuminate_attendance_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('illuminate_attendance_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
   }, [ticketId]);
+
+  const handleConfirmCheckin = async () => {
+    if (!ticket || ticket.checkedIn) return;
+    setCheckinLoading(true);
+    try {
+      await api.checkinTicket(ticket.ticketId, 'Mobile Pass View');
+      await fetchTicket(true);
+    } catch (err) {
+      console.error('Checkin error:', err);
+    } finally {
+      setCheckinLoading(false);
+    }
+  };
 
   const verifyUrl = typeof window !== 'undefined' ? `${window.location.origin}/ticket/${ticketId}` : '';
 
@@ -197,18 +223,30 @@ export default function DigitalPass() {
           </button>
         </div>
 
-        {/* Status Pill */}
-        <div>
+        {/* Status Pill & Instant Check-in Action */}
+        <div className="flex items-center gap-2">
           {ticket.checkedIn ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/40">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>ENTRY VERIFIED</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>ENTRY VERIFIED {ticket.checkedInAt ? `(${new Date(ticket.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : ''}</span>
+              </span>
+            </div>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-              <span>OFFICIAL TICKET</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                <span>OFFICIAL TICKET</span>
+              </span>
+              <button
+                onClick={handleConfirmCheckin}
+                disabled={checkinLoading}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 disabled:opacity-50"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{checkinLoading ? 'VERIFYING...' : 'CONFIRM ENTRY CHECK-IN'}</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

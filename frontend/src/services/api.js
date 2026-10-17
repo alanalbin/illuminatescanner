@@ -1,4 +1,5 @@
 import { localAttendanceStore } from './localAttendanceStore';
+import { cloudSync } from './cloudSync';
 
 const API_BASE = '/api';
 
@@ -231,6 +232,15 @@ export const api = {
   checkinTicket: async (qrContent, scannedBy = 'Attendance Desk', deviceInfo = navigator.userAgent) => {
     // Instant local check-in with 100% offline reliability
     const localRes = localAttendanceStore.checkinTicket(qrContent, scannedBy);
+
+    // Instant real-time cloud broadcast to Firebase RTDB for all connected devices
+    if (localRes.valid || localRes.success) {
+      const tid = localRes.ticketId || (localRes.ticket && localRes.ticket.ticketId);
+      if (tid) {
+        cloudSync.pushCheckin(tid, localRes).catch(() => {});
+      }
+    }
+
     // Non-blocking background sync if backend is active
     request('/tickets/checkin', {
       method: 'POST',
@@ -242,6 +252,12 @@ export const api = {
   undoCheckin: async (ticketId) => {
     // Immediate local store update and event broadcast for zero latency
     const localRes = localAttendanceStore.undoCheckin(ticketId);
+
+    // Instant real-time cloud sync to Firebase RTDB
+    if (ticketId) {
+      cloudSync.pushUndo(ticketId).catch(() => {});
+    }
+
     // Non-blocking background sync if backend is active
     request(`/tickets/${encodeURIComponent(ticketId)}/undo-checkin`, {
       method: 'POST',

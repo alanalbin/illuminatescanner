@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { cloudSync } from './services/cloudSync';
 import Navbar from './components/Navbar';
 import AdminDashboard from './pages/AdminDashboard';
 import TicketList from './pages/TicketList';
@@ -11,6 +12,10 @@ import Settings from './pages/Settings';
 import PassGallery from './pages/PassGallery';
 
 export default function App() {
+  useEffect(() => {
+    cloudSync.init();
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>

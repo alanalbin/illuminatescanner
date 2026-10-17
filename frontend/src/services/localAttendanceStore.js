@@ -551,5 +551,75 @@ export const localAttendanceStore = {
     ]);
 
     return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  },
+
+  applyRemoteCheckin: (ticketId, data) => {
+    if (!ticketId) return;
+    const tickets = loadTickets();
+    const ticket = findAttendee(tickets, ticketId);
+    if (!ticket) return;
+
+    if (!ticket.checkedIn || (data.checkedInAt && (!ticket.checkedInAt || data.checkedInAt > ticket.checkedInAt))) {
+      ticket.checkedIn = true;
+      ticket.checkedInAt = data.checkedInAt || new Date().toISOString();
+      ticket.checkedInBy = data.checkedInBy || 'Mobile Scanner';
+      ticket.status = 'USED';
+
+      const idx = tickets.findIndex(t => t.ticketId.toUpperCase() === ticket.ticketId.toUpperCase());
+      if (idx !== -1) {
+        tickets[idx] = ticket;
+        saveTickets(tickets);
+      }
+    }
+  },
+
+  applyRemoteUndo: (ticketId) => {
+    if (!ticketId) return;
+    const tickets = loadTickets();
+    const ticket = findAttendee(tickets, ticketId);
+    if (!ticket) return;
+
+    if (ticket.checkedIn) {
+      ticket.checkedIn = false;
+      ticket.checkedInAt = null;
+      ticket.checkedInBy = null;
+      ticket.status = 'ACTIVE';
+
+      const idx = tickets.findIndex(t => t.ticketId.toUpperCase() === ticket.ticketId.toUpperCase());
+      if (idx !== -1) {
+        tickets[idx] = ticket;
+        saveTickets(tickets);
+      }
+    }
+  },
+
+  applyAllRemoteCheckins: (remoteMap) => {
+    if (!remoteMap || typeof remoteMap !== 'object') return;
+    const tickets = loadTickets();
+    let changed = false;
+
+    const normalizedRemote = new Map();
+    Object.keys(remoteMap).forEach(k => {
+      const item = remoteMap[k];
+      if (item && (item.checkedIn || item.status === 'USED')) {
+        normalizedRemote.set(k.toUpperCase(), item);
+      }
+    });
+
+    tickets.forEach(ticket => {
+      const remote = normalizedRemote.get(ticket.ticketId.toUpperCase());
+      if (remote && !ticket.checkedIn) {
+        ticket.checkedIn = true;
+        ticket.checkedInAt = remote.checkedInAt || new Date().toISOString();
+        ticket.checkedInBy = remote.checkedInBy || 'Mobile Scanner';
+        ticket.status = 'USED';
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      saveTickets(tickets);
+    }
   }
 };
+
