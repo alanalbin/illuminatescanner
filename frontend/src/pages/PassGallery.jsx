@@ -100,33 +100,33 @@ export default function PassGallery() {
   const checkedInCount = safeTickets.filter(t => t.checkedIn).length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
       {/* Official Organizers & Partners Banner */}
-      <div className="w-full flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.02] border border-purple-500/20 backdrop-blur-md shadow-lg shadow-purple-950/20">
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl glass-card shadow-lg shadow-purple-950/20">
         <div className="flex items-center gap-2 text-xs font-mono font-bold text-purple-300/80 uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5 text-purple-400" />
           <span>Official Event Organizers & Partners</span>
         </div>
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-          <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow brightness-110 hover:scale-105 transition-all" title="E-Cell IIT Bombay" />
-          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
-          <img src="/logos/nec-iitb.png" alt="NEC 2026" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="National Entrepreneurship Challenge 2026" />
-          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
-          <img src="/logos/kmct-college.png" alt="KMCT College" className="h-5 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="KMCT College of Engineering for Emerging Technologies and Management" />
-          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
-          <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="NxT Byte E-Cell" />
+        <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto no-scrollbar w-full sm:w-auto py-1 justify-center sm:justify-end">
+          <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-5 sm:h-7 w-auto object-contain filter drop-shadow brightness-110 hover:scale-105 transition-all shrink-0" title="E-Cell IIT Bombay" />
+          <div className="w-px h-4 bg-purple-500/30 shrink-0" />
+          <img src="/logos/nec-iitb.png" alt="NEC 2026" className="h-5 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all shrink-0" title="National Entrepreneurship Challenge 2026" />
+          <div className="w-px h-4 bg-purple-500/30 shrink-0" />
+          <img src="/logos/kmct-college.png" alt="KMCT College" className="h-4 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all shrink-0" title="KMCT College of Engineering" />
+          <div className="w-px h-4 bg-purple-500/30 shrink-0" />
+          <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-4.5 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all shrink-0" title="NxT Byte E-Cell" />
         </div>
       </div>
 
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-purple-900/40 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-purple-900/40 pb-4 sm:pb-6">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Scannable QR Passes ({tickets.length || 50} Attendees)
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Scannable QR Passes ({tickets.length || 0} Attendees)
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-950/80 text-purple-300 border border-purple-500/40">
-              {checkedInCount} / {tickets.length || 50} Checked In
+              {checkedInCount} / {tickets.length || 0} Checked In
             </span>
           </div>
           <p className="text-xs sm:text-sm text-purple-300/70 mt-1">
@@ -135,10 +135,10 @@ export default function PassGallery() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/scanner"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple transition-all"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-glow-purple transition-all active:scale-95"
           >
             <ScanLine className="w-4 h-4 animate-pulse" />
             <span>Open Scanner</span>
@@ -146,16 +146,16 @@ export default function PassGallery() {
 
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors active:scale-95"
           >
             <Printer className="w-4 h-4 text-purple-400" />
-            <span>Print Sheet</span>
+            <span className="hidden xs:inline">Print</span>
           </button>
         </div>
       </div>
 
       {/* Search & Filters */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-purple-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
@@ -163,7 +163,7 @@ export default function PassGallery() {
             placeholder="Search by name, ticket ID, or course..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-dark-900/80 border border-purple-900/60 rounded-xl text-xs sm:text-sm text-white placeholder-purple-400/40 focus:outline-none focus:border-purple-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-dark-900/90 border border-purple-900/60 rounded-xl text-xs sm:text-sm text-white placeholder-purple-400/40 focus:outline-none focus:border-purple-500 transition-colors"
           />
         </div>
 
@@ -256,65 +256,68 @@ export default function PassGallery() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="mt-4 pt-3 border-t border-purple-900/30 flex flex-wrap items-center justify-between gap-1.5">
-              <a
-                href={`/passes/${t.ticketId}.png`}
-                download={`ILLUMINATE_Pass_${t.participantName.replace(/\s+/g, '_')}_${t.ticketId}.png`}
-                className="flex items-center gap-1 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors py-1 px-2 rounded-lg bg-purple-950/60 border border-purple-800/40 hover:bg-purple-900/50"
-                title="Download Official Pass"
-              >
-                <Download className="w-3.5 h-3.5 text-purple-400" />
-                <span>Pass</span>
-              </a>
-
-              <Link
-                to={`/ticket/${t.ticketId}`}
-                target="_blank"
-                className="flex items-center gap-1 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors py-1 px-2 rounded-lg hover:bg-purple-900/30"
-                title="Open Digital Pass"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
-                <span>Link</span>
-              </Link>
-
-              {t.phone && (
+            {/* Action Buttons Footer */}
+            <div className="mt-3 pt-3 border-t border-purple-900/30 space-y-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 <a
-                  href={`https://wa.me/91${t.phone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(
-                    `Hi ${t.participantName}! 🎉\nHere is your official confirmed entry pass for *ILLUMINATE 2026* (E-Cell IIT Bombay & KMCT):\n\n🎟️ *Ticket ID:* ${t.ticketId}\n🏛️ *Venue:* KMCT Auditorium\n\n👉 *View & Download Digital Pass:* https://illuminatescanner.vercel.app/ticket/${t.ticketId}\n\nPlease show this QR code at the registration desk for verification.`
-                  )}`}
+                  href={`/passes/${t.ticketId}.png`}
+                  download={`ILLUMINATE_Pass_${t.participantName.replace(/\s+/g, '_')}_${t.ticketId}.png`}
+                  className="flex items-center justify-center gap-1 text-[11px] font-semibold text-purple-200 hover:text-white transition-colors py-1.5 px-2 rounded-xl bg-purple-950/70 border border-purple-800/40 hover:bg-purple-900/50 active:scale-95"
+                  title="Download Official Pass"
+                >
+                  <Download className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Download</span>
+                </a>
+
+                <Link
+                  to={`/ticket/${t.ticketId}`}
                   target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[11px] font-bold text-emerald-300 hover:text-white transition-colors py-1 px-2.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 hover:bg-emerald-900/70 shadow-sm"
-                  title="Send Pass via WhatsApp"
+                  className="flex items-center justify-center gap-1 text-[11px] font-semibold text-purple-200 hover:text-white transition-colors py-1.5 px-2 rounded-xl bg-purple-950/70 border border-purple-800/40 hover:bg-purple-900/50 active:scale-95"
+                  title="Open Digital Pass"
                 >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>WhatsApp</span>
-                </a>
-              )}
+                  <ExternalLink className="w-3.5 h-3.5 text-purple-400" />
+                  <span>View Pass</span>
+                </Link>
+              </div>
 
-              {t.email && (
-                <a
-                  href={`mailto:${t.email}?subject=${encodeURIComponent(`Confirmed Event Pass: ILLUMINATE 2026 [${t.ticketId}]`)}&body=${encodeURIComponent(
-                    `Dear ${t.participantName},\n\nYour participation in the ILLUMINATE 2026 Entrepreneurship Workshop (E-Cell IIT Bombay & KMCT) is officially confirmed!\n\nPass ID: ${t.ticketId}\nParticipant: ${t.participantName}\nVenue: KMCT Auditorium\n\nYou can access your official digital pass and scannable QR code at this link:\nhttps://illuminatescanner.vercel.app/ticket/${t.ticketId}\n\nPlease present this QR pass at the entrance gate.\n\nWarm regards,\nAlan Albin & The Illuminate Organizing Team`
-                  )}`}
-                  className="p-1 rounded-lg bg-purple-950/60 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-800/40 transition-colors"
-                  title="Send Pass via Email"
-                >
-                  <Mail className="w-3.5 h-3.5 text-purple-400" />
-                </a>
-              )}
+              <div className="flex items-center justify-between gap-1.5">
+                {t.phone ? (
+                  <a
+                    href={`https://wa.me/91${t.phone.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(
+                      `Hi ${t.participantName}! 🎉\nHere is your official confirmed entry pass for *ILLUMINATE 2026* (E-Cell IIT Bombay & KMCT):\n\n🎟️ *Ticket ID:* ${t.ticketId}\n🏛️ *Venue:* KMCT Auditorium\n\n👉 *View & Download Digital Pass:* https://illuminatescanner.vercel.app/ticket/${t.ticketId}\n\nPlease show this QR code at the registration desk for verification.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-1 text-[11px] font-bold text-emerald-300 hover:text-white transition-colors py-1.5 px-2 rounded-xl bg-emerald-950/70 border border-emerald-500/40 hover:bg-emerald-900/70 shadow-sm active:scale-95"
+                    title="Send Pass via WhatsApp"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>WhatsApp</span>
+                  </a>
+                ) : t.email ? (
+                  <a
+                    href={`mailto:${t.email}?subject=${encodeURIComponent(`Confirmed Event Pass: ILLUMINATE 2026 [${t.ticketId}]`)}&body=${encodeURIComponent(
+                      `Dear ${t.participantName},\n\nYour participation in the ILLUMINATE 2026 Entrepreneurship Workshop (E-Cell IIT Bombay & KMCT) is officially confirmed!\n\nPass ID: ${t.ticketId}\nParticipant: ${t.participantName}\nVenue: KMCT Auditorium\n\nYou can access your official digital pass and scannable QR code at this link:\nhttps://illuminatescanner.vercel.app/ticket/${t.ticketId}\n\nPlease present this QR pass at the entrance gate.\n\nWarm regards,\nAlan Albin & The Illuminate Organizing Team`
+                    )}`}
+                    className="flex-1 flex items-center justify-center gap-1 text-[11px] font-medium text-purple-300 hover:text-white transition-colors py-1.5 px-2 rounded-xl bg-purple-950/60 border border-purple-800/40 hover:bg-purple-900/50"
+                    title="Send Pass via Email"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Email</span>
+                  </a>
+                ) : null}
 
-              {!t.checkedIn && (
-                <button
-                  onClick={() => handleQuickCheckin(t)}
-                  disabled={actionLoading === t.ticketId}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold bg-purple-600 hover:bg-purple-500 text-white transition-colors shadow-sm ml-auto"
-                >
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Verify</span>
-                </button>
-              )}
+                {!t.checkedIn && (
+                  <button
+                    onClick={() => handleQuickCheckin(t)}
+                    disabled={actionLoading === t.ticketId}
+                    className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white transition-all shadow-[0_0_12px_rgba(168,85,247,0.3)] active:scale-95 shrink-0"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Check In</span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}

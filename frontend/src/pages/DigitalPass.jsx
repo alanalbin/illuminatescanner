@@ -180,68 +180,68 @@ export default function DigitalPass() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none" />
 
       {/* Header controls bar */}
-      <div className="w-full max-w-[920px] flex flex-wrap items-center justify-between gap-4 mb-5 z-10">
-        <Link
-          to="/passes"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-purple-300/80 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to All Passes</span>
-        </Link>
+      <div className="w-full max-w-[920px] flex flex-col sm:flex-row items-center justify-between gap-3 mb-4 sm:mb-5 z-10">
+        <div className="flex items-center justify-between w-full sm:w-auto gap-3">
+          <Link
+            to="/passes"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-300/80 hover:text-white transition-colors py-1.5 px-2.5 rounded-xl bg-purple-950/60 border border-purple-800/40"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>All Passes</span>
+          </Link>
 
-        {/* View Mode Switcher */}
-        <div className="flex items-center bg-purple-950/70 border border-purple-500/30 p-1 rounded-2xl">
-          <button
-            onClick={() => setActiveSide('both')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-              activeSide === 'both' 
-                ? 'bg-purple-600 text-white shadow-sm' 
-                : 'text-purple-300/80 hover:text-white'
-            }`}
-          >
-            Both Sides
-          </button>
-          <button
-            onClick={() => setActiveSide('front')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-              activeSide === 'front' 
-                ? 'bg-purple-600 text-white shadow-sm' 
-                : 'text-purple-300/80 hover:text-white'
-            }`}
-          >
-            Front
-          </button>
-          <button
-            onClick={() => setActiveSide('back')}
-            className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-              activeSide === 'back' 
-                ? 'bg-purple-600 text-white shadow-sm' 
-                : 'text-purple-300/80 hover:text-white'
-            }`}
-          >
-            Back
-          </button>
+          {/* View Mode Switcher */}
+          <div className="flex items-center bg-purple-950/80 border border-purple-500/30 p-1 rounded-2xl">
+            <button
+              onClick={() => setActiveSide('both')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
+                activeSide === 'both' 
+                  ? 'bg-purple-600 text-white shadow-sm' 
+                  : 'text-purple-300/80 hover:text-white'
+              }`}
+            >
+              Both
+            </button>
+            <button
+              onClick={() => setActiveSide('front')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
+                activeSide === 'front' 
+                  ? 'bg-purple-600 text-white shadow-sm' 
+                  : 'text-purple-300/80 hover:text-white'
+              }`}
+            >
+              Front
+            </button>
+            <button
+              onClick={() => setActiveSide('back')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
+                activeSide === 'back' 
+                  ? 'bg-purple-600 text-white shadow-sm' 
+                  : 'text-purple-300/80 hover:text-white'
+              }`}
+            >
+              Back
+            </button>
+          </div>
         </div>
 
         {/* Status Pill & Instant Check-in Action */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center w-full sm:w-auto gap-2">
           {ticket.checkedIn ? (
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>ENTRY VERIFIED {ticket.checkedInAt ? `(${new Date(ticket.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : ''}</span>
-              </span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>ENTRY VERIFIED {ticket.checkedInAt ? `(${new Date(ticket.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : ''}</span>
+            </span>
           ) : (
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">
                 <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
                 <span>OFFICIAL TICKET</span>
               </span>
               <button
                 onClick={handleConfirmCheckin}
                 disabled={checkinLoading}
-                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{checkinLoading ? 'VERIFYING...' : 'CONFIRM ENTRY CHECK-IN'}</span>
@@ -265,11 +265,11 @@ export default function DigitalPass() {
       </div>
 
       {/* Bottom Action Controls */}
-      <div className="w-full max-w-[920px] mt-6 flex flex-wrap items-center justify-center sm:justify-between gap-3 z-10">
-        <div className="flex items-center gap-2">
+      <div className="w-full max-w-[920px] mt-5 sm:mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 z-10">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button
             onClick={handleCopyId}
-            className="py-2.5 px-4 rounded-xl text-xs font-bold bg-dark-900/90 hover:bg-purple-950 text-purple-200 border border-purple-600/40 flex items-center gap-2 transition-colors"
+            className="flex-1 sm:flex-initial justify-center py-2.5 px-4 rounded-xl text-xs font-bold bg-dark-900/90 hover:bg-purple-950 text-purple-200 border border-purple-600/40 flex items-center gap-2 transition-colors active:scale-95"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-purple-400" />}
             <span>{copied ? 'ID COPIED!' : `COPY ID (${ticket.ticketId})`}</span>
@@ -277,7 +277,7 @@ export default function DigitalPass() {
 
           <button
             onClick={handleShare}
-            className="py-2.5 px-4 rounded-xl text-xs font-bold bg-dark-900/90 hover:bg-purple-950 text-purple-200 border border-purple-600/40 flex items-center gap-2 transition-colors"
+            className="flex-1 sm:flex-initial justify-center py-2.5 px-4 rounded-xl text-xs font-bold bg-dark-900/90 hover:bg-purple-950 text-purple-200 border border-purple-600/40 flex items-center gap-2 transition-colors active:scale-95"
           >
             <Share2 className="w-3.5 h-3.5 text-purple-400" />
             <span>SHARE PASS</span>
@@ -287,7 +287,7 @@ export default function DigitalPass() {
         <button
           onClick={handleDownloadPass}
           disabled={downloading}
-          className="py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          className="w-full sm:w-auto py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2 transition-all disabled:opacity-50 active:scale-95"
         >
           <Download className="w-4 h-4" />
           <span>{downloading ? 'GENERATING PASS IMAGE...' : 'DOWNLOAD HIGH-RES PASS'}</span>

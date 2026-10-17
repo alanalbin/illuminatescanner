@@ -187,39 +187,33 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right Status Badge & Mobile Scan */}
+        {/* Right Status Badge */}
         <div className="flex items-center gap-2 sm:gap-3">
           
-          {/* Live Check-in Counter Pill (Live real-time count synced across all tabs) */}
+          {/* Live Check-in Counter Pill */}
           <Link
             to="/attendance"
-            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 border border-purple-500/30 text-xs transition-colors shadow-sm"
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-purple-950/70 hover:bg-purple-900/90 border border-purple-500/30 text-xs transition-all shadow-[0_0_15px_rgba(168,85,247,0.15)] active:scale-95"
             title="Click to view live attendee check-in roster"
           >
-            <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+            </span>
             <div className="flex items-center gap-1 font-bold">
-              <span className="text-emerald-400">{stats.checkedIn}</span>
-              <span className="text-purple-400/80">/</span>
-              <span className="text-white">{stats.totalRegistrations}</span>
+              <span className="text-emerald-400 font-mono">{stats.checkedIn}</span>
+              <span className="text-purple-400/70">/</span>
+              <span className="text-white font-mono">{stats.totalRegistrations}</span>
             </div>
-            <span className="hidden sm:inline text-purple-300/80 text-[11px] font-medium">Checked In</span>
-          </Link>
-
-          {/* Quick Scanner shortcut button */}
-          <Link
-            to="/scanner"
-            className="lg:hidden flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-semibold bg-purple-600 text-white shadow-glow-purple hover:bg-purple-500 transition-all"
-          >
-            <ScanLine className="w-3.5 h-3.5" />
-            <span>Scan</span>
+            <span className="hidden sm:inline text-purple-300 text-[11px] font-medium">Checked In</span>
           </Link>
 
         </div>
 
       </div>
 
-      {/* Mobile Bottom Navigation Bar (Fixed for effortless thumb navigation on phones) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-dark-950/95 backdrop-blur-2xl border-t border-purple-900/50 px-2 py-1.5 flex items-center justify-around shadow-[0_-8px_25px_rgba(0,0,0,0.6)]">
+      {/* Mobile Bottom Navigation Bar (Floating Docked Bar with Safe Area) */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#070314]/90 backdrop-blur-2xl border-t border-purple-500/20 px-2 pt-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-10px_35px_rgba(0,0,0,0.8)]">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.path ||
@@ -228,14 +222,14 @@ export default function Navbar() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all ${
+              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl transition-all duration-200 ${
                 isActive
-                  ? 'text-white font-bold bg-purple-600/30 border border-purple-500/40 shadow-glow-purple'
-                  : 'text-purple-300/60 hover:text-white font-medium'
+                  ? 'text-white font-bold bg-gradient-to-b from-purple-600/40 to-purple-800/20 border border-purple-500/50 shadow-[0_0_15px_rgba(168,85,247,0.35)] scale-105'
+                  : 'text-purple-300/60 hover:text-white font-medium hover:scale-105 active:scale-95'
               }`}
             >
-              <Icon className={`w-4 h-4 mb-0.5 ${isActive ? 'text-purple-300 animate-pulse' : ''}`} />
-              <span className="text-[10px] tracking-tight">{item.label.replace('Pass ', '').replace('Live ', '')}</span>
+              <Icon className={`w-4 h-4 mb-1 ${isActive ? 'text-purple-300' : ''}`} />
+              <span className="text-[10px] tracking-tight whitespace-nowrap">{item.label.replace('Pass ', '').replace('Live ', '')}</span>
             </Link>
           );
         })}

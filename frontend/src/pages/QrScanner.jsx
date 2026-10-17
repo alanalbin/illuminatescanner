@@ -23,7 +23,10 @@ import {
   VolumeX,
   Zap,
   CheckCheck,
-  RefreshCw
+  RefreshCw,
+  Flashlight,
+  FlashlightOff,
+  X
 } from 'lucide-react';
 
 export default function QrScanner() {
@@ -51,6 +54,8 @@ export default function QrScanner() {
   const [cameraFacing, setCameraFacing] = useState('environment'); // 'environment' (back) or 'user' (front)
   const [copiedId, setCopiedId] = useState(false);
   const [actionNotice, setActionNotice] = useState(null);
+  const [hasTorch, setHasTorch] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
 
   const html5QrCodeRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -247,6 +252,20 @@ export default function QrScanner() {
         console.log('Camera list note:', e);
       }
 
+      // 6. Detect torch / flashlight capability on mobile
+      try {
+        setTimeout(() => {
+          const video = document.querySelector('#qr-reader video');
+          if (video && video.srcObject) {
+            const track = video.srcObject.getVideoTracks()[0];
+            const caps = track?.getCapabilities ? track.getCapabilities() : {};
+            if (caps.torch) {
+              setHasTorch(true);
+            }
+          }
+        }, 500);
+      } catch (e) {}
+
     } catch (err) {
       console.warn('Camera start error:', err);
 
@@ -420,6 +439,24 @@ export default function QrScanner() {
     setManualInput('');
   };
 
+  const toggleTorch = async () => {
+    try {
+      const video = document.querySelector('#qr-reader video');
+      if (video && video.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0];
+        if (track && track.applyConstraints) {
+          const nextTorch = !torchOn;
+          await track.applyConstraints({
+            advanced: [{ torch: nextTorch }]
+          });
+          setTorchOn(nextTorch);
+        }
+      }
+    } catch (err) {
+      console.warn('Torch toggle error:', err);
+    }
+  };
+
   const switchCamera = () => {
     if (cameras.length > 1) {
       const currentIndex = cameras.findIndex(c => c.id === selectedCameraId);
@@ -441,6 +478,8 @@ export default function QrScanner() {
     setTimeout(() => setCopiedId(false), 2000);
   };
 
+  const [isFeedExpanded, setIsFeedExpanded] = useState(false);
+
   // Determine current result status
   const isCheckedIn = scanResult && (
     scanResult.checkedIn ||
@@ -451,11 +490,11 @@ export default function QrScanner() {
   ) && scanResult.status !== 'UNDONE';
 
   const isUndone = scanResult && scanResult.status === 'UNDONE';
-  const isUnrecognized = scanResult && (scanResult.status === 'INVALID' || !scanResult.valid && !isCheckedIn && !isUndone);
+  const isUnrecognized = scanResult && (scanResult.status === 'INVALID' || (!scanResult.valid && !isCheckedIn && !isUndone));
   const isCancelled = scanResult && scanResult.status === 'CANCELLED';
 
   return (
-    <div className="w-full max-w-lg mx-auto px-3 sm:px-4 pt-1.5 sm:py-3 flex flex-col gap-2.5 sm:gap-3 pb-24 sm:pb-8">
+    <div className="w-full max-w-md mx-auto px-3 sm:px-4 pt-2 sm:pt-4 flex flex-col gap-3 pb-24 sm:pb-12">
       
       {/* Hidden File Input for Native Mobile Camera Photo / Gallery Upload */}
       <input
@@ -467,28 +506,43 @@ export default function QrScanner() {
         onChange={handlePhotoUpload}
       />
 
-      {/* Scanner Control Strip (Camera Switch, Sound, Auto-Checkin, Photo Upload) */}
-      <div className="flex items-center justify-between gap-1.5 sm:gap-2 p-2 rounded-2xl bg-dark-900/90 border border-purple-500/20 backdrop-blur-md text-xs shadow-md">
+      {/* Floating Control Bar (Minimalist, ergonomic pill design) */}
+      <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-2xl glass-panel shadow-lg">
         
         {/* Auto Check-in Toggle */}
         <button
           onClick={() => setAutoCheckin(!autoCheckin)}
-          className={`flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 rounded-xl font-bold transition-all text-[11px] sm:text-xs ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all text-xs ${
             autoCheckin 
-              ? 'bg-purple-600 text-white shadow-glow-purple' 
-              : 'bg-dark-950 text-purple-300 border border-purple-800/40 hover:bg-dark-800'
+              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+              : 'bg-dark-950/80 text-purple-300 border border-purple-800/40 hover:bg-purple-950/40'
           }`}
           title="When enabled, scanning a QR code instantly records attendance"
         >
-          <Zap className="w-3.5 h-3.5 text-yellow-300" />
+          <Zap className={`w-3.5 h-3.5 ${autoCheckin ? 'text-yellow-300 fill-yellow-300' : 'text-purple-400'}`} />
           <span>Auto: {autoCheckin ? 'ON' : 'OFF'}</span>
         </button>
 
-        <div className="flex items-center gap-1 sm:gap-1.5">
+        <div className="flex items-center gap-1">
+          {/* Flashlight / Torch Toggle */}
+          {hasTorch && (
+            <button
+              onClick={toggleTorch}
+              className={`p-2 rounded-xl transition-all active:scale-95 ${
+                torchOn 
+                  ? 'bg-amber-400/20 text-amber-300 border border-amber-400/50 shadow-[0_0_12px_rgba(251,191,36,0.4)]'
+                  : 'bg-dark-950/70 hover:bg-purple-950/60 text-purple-300 border border-purple-800/30'
+              }`}
+              title={torchOn ? 'Turn Flashlight Off' : 'Turn Flashlight On'}
+            >
+              {torchOn ? <Flashlight className="w-4 h-4 text-amber-300" /> : <FlashlightOff className="w-4 h-4 text-purple-400" />}
+            </button>
+          )}
+
           {/* Sound Toggle */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-1.5 rounded-xl bg-dark-950 hover:bg-purple-950 text-purple-300 border border-purple-800/40 transition-colors"
+            className="p-2 rounded-xl bg-dark-950/70 hover:bg-purple-950/60 text-purple-300 border border-purple-800/30 transition-all active:scale-95"
             title={soundEnabled ? 'Mute Scan Sound Effects' : 'Enable Scan Sound Effects'}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4 text-slate-400" />}
@@ -497,7 +551,7 @@ export default function QrScanner() {
           {/* Camera Switch (Front / Rear) */}
           <button
             onClick={switchCamera}
-            className="p-1.5 rounded-xl bg-dark-950 hover:bg-purple-950 text-purple-300 border border-purple-800/40 transition-colors"
+            className="p-2 rounded-xl bg-dark-950/70 hover:bg-purple-950/60 text-purple-300 border border-purple-800/30 transition-all active:scale-95"
             title="Switch Camera (Front / Rear)"
           >
             <RotateCw className="w-4 h-4 text-purple-400" />
@@ -506,7 +560,7 @@ export default function QrScanner() {
           {/* Snap Photo / Upload Pass */}
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-dark-950 hover:bg-purple-950 text-purple-300 border border-purple-800/40 transition-colors text-[11px] sm:text-xs font-semibold"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-dark-950/70 hover:bg-purple-950/60 text-purple-300 border border-purple-800/30 transition-all text-xs font-semibold active:scale-95"
             title="Snap Photo or Choose QR from Gallery"
           >
             <Camera className="w-3.5 h-3.5 text-purple-400" />
@@ -516,42 +570,42 @@ export default function QrScanner() {
           {/* Manual Entry Toggle */}
           <button
             onClick={() => setShowManual(!showManual)}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-semibold border transition-all text-[11px] sm:text-xs ${
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl font-semibold border transition-all text-xs active:scale-95 ${
               showManual 
-                ? 'bg-purple-900 text-white border-purple-500' 
-                : 'bg-dark-950 text-purple-300 border-purple-800/40 hover:bg-dark-800'
+                ? 'bg-purple-600 text-white border-purple-400 shadow-[0_0_12px_rgba(168,85,247,0.4)]' 
+                : 'bg-dark-950/70 text-purple-300 border-purple-800/30 hover:bg-purple-950/40'
             }`}
           >
             <Keyboard className="w-3.5 h-3.5" />
-            <span>ID Entry</span>
+            <span>ID</span>
           </button>
         </div>
 
       </div>
 
-      {/* Manual Entry Form Dropdown */}
+      {/* Manual Entry Dropdown Form */}
       {showManual && (
-        <form onSubmit={handleManualSubmit} className="p-3 rounded-2xl bg-dark-900 border border-purple-500/40 shadow-lg flex gap-2 animate-fade-in">
+        <form onSubmit={handleManualSubmit} className="p-2.5 rounded-2xl glass-card flex gap-2 animate-sheet-up">
           <input
             type="text"
-            placeholder="Type Ticket ID, name, or phone..."
+            placeholder="Search Ticket ID (e.g. ILM-KMCT-...) or name..."
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-xl bg-dark-950 border border-purple-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
+            className="flex-1 px-3 py-2 rounded-xl bg-dark-950/80 border border-purple-700/50 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
             autoFocus
           />
           <button
             type="submit"
             disabled={loading || !manualInput.trim()}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md disabled:opacity-50 transition-all"
           >
             Verify
           </button>
         </form>
       )}
 
-      {/* Camera Viewport / Scanning Area (Always square, responsive, never collapsed) */}
-      <div className="relative w-full aspect-square max-w-[310px] xs:max-w-[340px] sm:max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-black border-2 border-purple-500/40 shadow-glow-purple flex items-center justify-center shrink-0">
+      {/* Camera Viewport / Scanning Area */}
+      <div className="relative w-full aspect-square max-w-[340px] sm:max-w-[380px] mx-auto rounded-3xl overflow-hidden bg-black border-2 border-purple-500/40 shadow-[0_0_35px_rgba(168,85,247,0.25)] flex items-center justify-center shrink-0 animate-viewfinder">
         
         {/* html5-qrcode video viewport */}
         <div id="qr-reader" className="w-full h-full" />
@@ -560,17 +614,18 @@ export default function QrScanner() {
         {!scanResult && !cameraError && (
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
             {/* Target box corners */}
-            <div className="w-[200px] h-[200px] sm:w-[230px] sm:h-[230px] relative border-2 border-purple-400/40 rounded-2xl">
-              <div className="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-purple-400 rounded-tl-xl" />
-              <div className="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-purple-400 rounded-tr-xl" />
-              <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-purple-400 rounded-bl-xl" />
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-purple-400 rounded-br-xl" />
+            <div className="w-[210px] h-[210px] sm:w-[240px] sm:h-[240px] relative border border-purple-400/30 rounded-3xl">
+              <div className="absolute -top-1 -left-1 w-7 h-7 border-t-4 border-l-4 border-fuchsia-400 rounded-tl-2xl shadow-[0_0_10px_rgba(217,70,239,0.8)]" />
+              <div className="absolute -top-1 -right-1 w-7 h-7 border-t-4 border-r-4 border-fuchsia-400 rounded-tr-2xl shadow-[0_0_10px_rgba(217,70,239,0.8)]" />
+              <div className="absolute -bottom-1 -left-1 w-7 h-7 border-b-4 border-l-4 border-fuchsia-400 rounded-bl-2xl shadow-[0_0_10px_rgba(217,70,239,0.8)]" />
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 border-b-4 border-r-4 border-fuchsia-400 rounded-br-2xl shadow-[0_0_10px_rgba(217,70,239,0.8)]" />
               
-              {/* Animated laser scan line */}
-              <div className="w-full h-1 bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-glow-purple animate-scan absolute top-0" />
+              {/* Smooth Animated laser scan line */}
+              <div className="w-full h-1 bg-gradient-to-r from-transparent via-fuchsia-400 to-transparent shadow-[0_0_15px_rgba(217,70,239,0.9)] animate-scan-laser absolute" />
             </div>
-            <p className="text-[11px] text-purple-200/90 font-medium mt-3 bg-black/75 px-3 py-1 rounded-full backdrop-blur-md border border-purple-500/30">
-              Align Participant QR Code within box
+            
+            <p className="text-[11px] text-purple-200/90 font-medium mt-4 bg-black/80 px-3.5 py-1 rounded-full backdrop-blur-md border border-purple-500/30 shadow-md">
+              Point camera at attendee pass QR
             </p>
           </div>
         )}
@@ -590,7 +645,7 @@ export default function QrScanner() {
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full max-w-xs pt-1">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple flex items-center justify-center gap-1.5 transition-all"
+                className="w-full py-2.5 px-3 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-md flex items-center justify-center gap-1.5 transition-all"
               >
                 <Camera className="w-3.5 h-3.5" />
                 <span>Snap / Upload Pass Photo</span>
@@ -606,43 +661,52 @@ export default function QrScanner() {
           </div>
         )}
 
-        {/* INTERACTIVE SCAN RESULT MODAL (Shows Check & Undo Options) */}
+        {/* INTERACTIVE SCAN RESULT MODAL */}
         {scanResult && (
-          <div className="absolute inset-0 z-30 flex flex-col justify-between p-4 sm:p-5 bg-dark-950/98 backdrop-blur-2xl animate-fade-in overflow-y-auto no-scrollbar">
+          <div className="absolute inset-0 z-30 flex flex-col justify-between p-4 sm:p-5 bg-[#09041a]/98 backdrop-blur-2xl animate-sheet-up overflow-y-auto no-scrollbar">
             
+            {/* Quick Dismiss Button */}
+            <button
+              onClick={handleScanAgain}
+              className="absolute top-3 right-3 p-1.5 rounded-full bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-300 hover:text-white transition-all active:scale-95 z-40"
+              title="Close and Scan Next"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
             {/* Top Status Header */}
             <div className="text-center pt-1">
               {isCheckedIn ? (
                 <div className="space-y-1">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mx-auto text-emerald-400 shadow-glow-green">
-                    <CheckCircle2 className="w-7 h-7" />
+                  <div className="w-13 h-13 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mx-auto text-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.5)]">
+                    <CheckCircle2 className="w-8 h-8" />
                   </div>
-                  <div className="text-lg font-black text-emerald-400 tracking-wider">
-                    CHECKED IN
+                  <div className="text-lg font-black text-emerald-400 tracking-wider font-heading">
+                    ENTRY CONFIRMED
                   </div>
                   <div className="text-[10px] uppercase font-bold tracking-widest text-emerald-300">
-                    ATTENDANCE RECORDED &bull; ENTRY APPROVED
+                    ATTENDANCE RECORDED IN CLOUD
                   </div>
                 </div>
               ) : isUndone ? (
                 <div className="space-y-1">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mx-auto text-amber-400 shadow-glow-amber">
+                  <div className="w-13 h-13 rounded-full bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mx-auto text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.5)]">
                     <RotateCcw className="w-7 h-7" />
                   </div>
-                  <div className="text-lg font-black text-amber-400 tracking-wider">
-                    CHECK-IN UNDONE
+                  <div className="text-lg font-black text-amber-400 tracking-wider font-heading">
+                    CHECK-IN REVERTED
                   </div>
                   <div className="text-[10px] uppercase font-bold tracking-widest text-amber-300">
-                    MARKED AS ABSENT &bull; READY TO RE-CHECK
+                    MARKED AS ABSENT / AWAITING ENTRY
                   </div>
                 </div>
               ) : isCancelled ? (
                 <div className="space-y-1">
-                  <div className="w-12 h-12 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center mx-auto text-rose-400 shadow-glow-red">
+                  <div className="w-13 h-13 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center mx-auto text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.5)]">
                     <XCircle className="w-7 h-7" />
                   </div>
-                  <div className="text-lg font-black text-rose-400 tracking-wider">
-                    CANCELLED PASS
+                  <div className="text-lg font-black text-rose-400 tracking-wider font-heading">
+                    PASS CANCELLED
                   </div>
                   <div className="text-[10px] uppercase font-bold tracking-widest text-rose-400">
                     ENTRY NOT PERMITTED
@@ -650,38 +714,38 @@ export default function QrScanner() {
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <div className="w-12 h-12 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center mx-auto text-rose-400 shadow-glow-red">
+                  <div className="w-13 h-13 rounded-full bg-rose-500/20 border-2 border-rose-500 flex items-center justify-center mx-auto text-rose-400 shadow-[0_0_20px_rgba(244,63,94,0.5)]">
                     <AlertTriangle className="w-7 h-7" />
                   </div>
-                  <div className="text-lg font-black text-rose-400 tracking-wider">
+                  <div className="text-lg font-black text-rose-400 tracking-wider font-heading">
                     UNRECOGNIZED PASS
                   </div>
                   <div className="text-[10px] uppercase font-bold tracking-widest text-rose-300">
-                    NOT IN REGISTERED ATTENDEE LIST
+                    NOT FOUND IN ATTENDEE DATABASE
                   </div>
                 </div>
               )}
             </div>
 
             {/* Attendee Details Card */}
-            <div className="my-2 p-3 rounded-2xl bg-dark-900/90 border border-purple-800/50 space-y-2 text-center">
+            <div className="my-2 p-3 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2 text-center backdrop-blur-md">
               {(scanResult.participantName || scanResult.ticket?.participantName) ? (
                 <>
                   <div>
-                    <div className="text-[10px] uppercase font-bold text-purple-400">PARTICIPANT</div>
-                    <div className="text-base font-extrabold text-white">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-purple-400">PARTICIPANT</div>
+                    <div className="text-base font-black text-white font-heading">
                       {scanResult.participantName || scanResult.ticket?.participantName}
                     </div>
                   </div>
 
                   {(scanResult.ticketId || scanResult.ticket?.ticketId) && (
                     <div className="flex items-center justify-center gap-1.5">
-                      <span className="font-mono text-xs font-bold text-purple-200 bg-purple-950/80 px-2 py-0.5 rounded-md border border-purple-800/40">
+                      <span className="font-mono text-xs font-bold text-purple-200 bg-purple-900/60 px-2 py-0.5 rounded-lg border border-purple-700/50">
                         {scanResult.ticketId || scanResult.ticket?.ticketId}
                       </span>
                       <button
                         onClick={() => copyTicketId(scanResult.ticketId || scanResult.ticket?.ticketId)}
-                        className="p-1 rounded-md text-purple-400 hover:text-white"
+                        className="p-1 rounded-md text-purple-400 hover:text-white transition-colors"
                         title="Copy Ticket ID"
                       >
                         {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -691,14 +755,14 @@ export default function QrScanner() {
 
                   {(scanResult.college || scanResult.ticket?.college) && (
                     <div className="text-[11px] text-purple-300 font-medium flex items-center justify-center gap-1">
-                      <Building className="w-3 h-3 text-purple-400" />
+                      <Building className="w-3 h-3 text-purple-400 shrink-0" />
                       <span className="truncate max-w-[260px]">{scanResult.college || scanResult.ticket?.college}</span>
                     </div>
                   )}
 
                   {(scanResult.course || scanResult.ticket?.course) && (
                     <div className="text-[11px] text-purple-300/80 flex items-center justify-center gap-1">
-                      <GraduationCap className="w-3 h-3 text-purple-400" />
+                      <GraduationCap className="w-3 h-3 text-purple-400 shrink-0" />
                       <span>{scanResult.course || scanResult.ticket?.course}</span>
                     </div>
                   )}
@@ -719,7 +783,7 @@ export default function QrScanner() {
 
               {/* Status Notice */}
               {actionNotice && (
-                <div className="text-xs font-bold text-emerald-300 bg-emerald-950/60 py-1 px-2 rounded-lg border border-emerald-800/40 animate-fade-in">
+                <div className="text-xs font-bold text-emerald-300 bg-emerald-950/80 py-1 px-2 rounded-lg border border-emerald-800/40 animate-fade-in">
                   {actionNotice}
                 </div>
               )}
@@ -740,7 +804,7 @@ export default function QrScanner() {
                   <button
                     onClick={handleConfirmCheckin}
                     disabled={loading || isCancelled || isUnrecognized}
-                    className="py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all flex items-center justify-center gap-1.5 disabled:opacity-40"
+                    className="py-2.5 rounded-xl font-bold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     <span>{loading ? 'Checking...' : 'Check In Pass'}</span>
@@ -752,7 +816,7 @@ export default function QrScanner() {
                   <button
                     onClick={() => handleUndoCheckin(scanResult.ticketId || scanResult.ticket?.ticketId)}
                     disabled={loading}
-                    className="py-2.5 rounded-xl font-bold text-xs bg-amber-950/80 hover:bg-amber-900 text-amber-200 border border-amber-600/50 transition-all flex items-center justify-center gap-1.5 shadow-sm"
+                    className="py-2.5 rounded-xl font-bold text-xs bg-amber-950/80 hover:bg-amber-900 text-amber-200 border border-amber-600/50 transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
                   >
                     <RotateCcw className="w-4 h-4 text-amber-400" />
                     <span>{loading ? 'Reverting...' : 'Undo Check-in'}</span>
@@ -769,7 +833,7 @@ export default function QrScanner() {
               {/* 3. SCAN NEXT PASS (Primary Advance Button) */}
               <button
                 onClick={handleScanAgain}
-                className="w-full py-2.5 rounded-xl font-bold text-xs bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple transition-all flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95"
               >
                 <span>Scan Next Pass</span>
                 <ArrowRight className="w-4 h-4" />
@@ -782,100 +846,109 @@ export default function QrScanner() {
 
       </div>
 
-      {/* Live Gate Counters (Registered | Checked In | Remaining) */}
-      <div className="p-3 rounded-2xl glass-panel border border-purple-500/20 shadow-md">
+      {/* Live Gate Counters (Unified 3-part card) */}
+      <div className="p-3 rounded-2xl glass-card shadow-lg">
         <div className="grid grid-cols-3 divide-x divide-purple-900/50 text-center">
           <div>
-            <span className="text-[10px] uppercase font-bold text-purple-400/80 block">
-              Registered
-            </span>
-            <span className="text-base font-black text-white">
-              {stats.totalRegistrations}
-            </span>
-          </div>
-          <div>
-            <span className="text-[10px] uppercase font-bold text-emerald-400/80 block">
+            <span className="text-[10px] uppercase font-bold text-emerald-400/90 block">
               Checked In
             </span>
-            <span className="text-base font-black text-emerald-400 flex items-center justify-center gap-1">
+            <span className="text-lg font-black text-emerald-400 flex items-center justify-center gap-1.5 font-mono">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               {stats.checkedIn}
             </span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-amber-400/80 block">
+            <span className="text-[10px] uppercase font-bold text-amber-400/90 block">
               Remaining
             </span>
-            <span className="text-base font-black text-amber-400">
+            <span className="text-lg font-black text-amber-400 font-mono">
               {stats.remaining}
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-bold text-purple-400/90 block">
+              Total Cohort
+            </span>
+            <span className="text-lg font-black text-white font-mono">
+              {stats.totalRegistrations}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Live Check-ins Feed with Direct Undo Option */}
-      <div className="p-3 rounded-2xl bg-dark-900/80 border border-purple-500/20 shadow-md">
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-purple-900/40 text-xs">
+      {/* Collapsible Live Check-ins Feed */}
+      <div className="rounded-2xl glass-panel shadow-md overflow-hidden transition-all">
+        <button
+          onClick={() => setIsFeedExpanded(!isFeedExpanded)}
+          className="w-full flex items-center justify-between p-3 text-xs hover:bg-purple-950/30 transition-colors"
+        >
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
             <span className="font-extrabold uppercase tracking-wider text-purple-200 text-[11px]">
-              Live Check-ins Feed
+              Live Check-in Stream
+            </span>
+            <span className="text-[10px] text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800/40 font-mono">
+              {stats.checkedIn} Present
             </span>
           </div>
-          <span className="text-[10px] text-purple-300/70 font-medium">
-            {stats.checkedIn} Present &bull; Real-time
+          <span className="text-[11px] text-purple-400 font-semibold">
+            {isFeedExpanded ? 'Collapse ▲' : 'View Stream ▼'}
           </span>
-        </div>
+        </button>
 
-        {stats.checkedInAttendees && stats.checkedInAttendees.length > 0 ? (
-          <div className="space-y-1.5 max-h-36 overflow-y-auto no-scrollbar pr-1">
-            {stats.checkedInAttendees.slice(0, 4).map((att) => (
-              <div 
-                key={att.ticketId}
-                className="flex items-center justify-between gap-2 p-2 rounded-xl bg-purple-950/30 hover:bg-purple-950/60 border border-purple-900/30 text-xs transition-colors"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="font-bold text-white truncate text-[11px]">
-                    {att.participantName}
-                  </div>
-                  <div className="text-[10px] text-purple-300/70 font-mono truncate">
-                    {att.ticketId}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">
-                    Checked In
-                  </span>
-                  
-                  {/* Direct Undo Button right on the live feed */}
-                  <button
-                    onClick={() => handleUndoCheckin(att.ticketId)}
-                    className="p-1 rounded-lg text-amber-300 hover:text-white hover:bg-amber-950/60 border border-amber-800/40 transition-colors"
-                    title={`Undo check-in for ${att.participantName}`}
+        {isFeedExpanded && (
+          <div className="p-3 pt-0 border-t border-purple-900/40 space-y-2 animate-sheet-up">
+            {stats.checkedInAttendees && stats.checkedInAttendees.length > 0 ? (
+              <div className="space-y-1.5 max-h-48 overflow-y-auto no-scrollbar pt-2 pr-1">
+                {stats.checkedInAttendees.slice(0, 6).map((att) => (
+                  <div 
+                    key={att.ticketId}
+                    className="flex items-center justify-between gap-2 p-2 rounded-xl bg-purple-950/40 hover:bg-purple-950/70 border border-purple-900/40 text-xs transition-colors"
                   >
-                    <RotateCcw className="w-3 h-3" />
-                  </button>
-                </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-white truncate text-[11px]">
+                        {att.participantName}
+                      </div>
+                      <div className="text-[10px] text-purple-300/70 font-mono truncate">
+                        {att.ticketId}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
+                        Present
+                      </span>
+                      
+                      <button
+                        onClick={() => handleUndoCheckin(att.ticketId)}
+                        className="p-1 rounded-lg text-amber-300 hover:text-white hover:bg-amber-950/60 border border-amber-800/40 transition-colors"
+                        title={`Undo check-in for ${att.participantName}`}
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="py-3 text-center text-xs text-purple-300/60">
-            No attendees checked in yet. Scan any attendee pass to take live attendance!
+            ) : (
+              <div className="py-3 text-center text-xs text-purple-300/60">
+                No attendees checked in yet. Point camera at pass to take attendance!
+              </div>
+            )}
+
+            <Link
+              to="/attendance"
+              className="flex items-center justify-center gap-1.5 pt-2 border-t border-purple-900/40 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors"
+            >
+              <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Open Master Attendance Table ({stats.checkedIn} Present) &rarr;</span>
+            </Link>
           </div>
         )}
-
-        <Link
-          to="/attendance"
-          className="flex items-center justify-center gap-1.5 pt-2 mt-2 border-t border-purple-900/40 text-[11px] font-semibold text-purple-300 hover:text-white transition-colors"
-        >
-          <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Open Full Live Attendance Desk ({stats.checkedIn} Present) &rarr;</span>
-        </Link>
       </div>
 
     </div>

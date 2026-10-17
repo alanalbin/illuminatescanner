@@ -5,7 +5,7 @@ export default function StatsCards({ stats }) {
   const cards = [
     {
       title: 'Total Registrations',
-      value: stats?.totalRegistrations ?? 50,
+      value: stats?.totalRegistrations ?? 0,
       icon: Users,
       color: 'text-purple-400',
       bgGlow: 'from-purple-600/20 to-purple-900/10',
@@ -14,7 +14,7 @@ export default function StatsCards({ stats }) {
     },
     {
       title: 'QR Generated',
-      value: stats?.qrGenerated ?? 50,
+      value: stats?.qrGenerated ?? stats?.totalRegistrations ?? 0,
       icon: QrCode,
       color: 'text-indigo-400',
       bgGlow: 'from-indigo-600/20 to-indigo-900/10',
@@ -32,7 +32,7 @@ export default function StatsCards({ stats }) {
     },
     {
       title: 'Remaining',
-      value: stats?.remaining ?? 50,
+      value: stats?.remaining ?? 0,
       icon: Clock,
       color: 'text-amber-400',
       bgGlow: 'from-amber-600/20 to-amber-900/10',
@@ -46,18 +46,20 @@ export default function StatsCards({ stats }) {
       color: 'text-rose-400',
       bgGlow: 'from-rose-600/20 to-rose-900/10',
       border: 'border-rose-600/30',
-      subtitle: 'Rejected / suspicious scans',
+      subtitle: 'Rejected scans',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4">
       {cards.map((c, i) => {
         const Icon = c.icon;
         return (
           <div
             key={i}
-            className={`relative overflow-hidden rounded-2xl p-4 bg-gradient-to-br ${c.bgGlow} border ${c.border} backdrop-blur-xl shadow-lg transition-transform hover:-translate-y-1 duration-200`}
+            className={`relative overflow-hidden rounded-2xl p-3.5 sm:p-4 bg-gradient-to-br ${c.bgGlow} border ${c.border} backdrop-blur-xl shadow-lg transition-transform hover:-translate-y-1 duration-200 ${
+              i === 4 ? 'col-span-2 md:col-span-1' : ''
+            }`}
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-purple-200/70 tracking-wide uppercase">

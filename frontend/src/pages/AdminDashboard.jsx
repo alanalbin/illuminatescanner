@@ -180,7 +180,7 @@ export default function AdminDashboard() {
 
   // Live computed stats for accurate counts
   const liveStats = useMemo(() => {
-    const total = allAttendees.length || stats?.totalRegistrations || 50;
+    const total = allAttendees.length || stats?.totalRegistrations || 0;
     const checkedInCount = checkedInAttendees.length;
     const remainingCount = Math.max(0, total - checkedInCount);
     return {
@@ -212,34 +212,34 @@ export default function AdminDashboard() {
   const filteredAll = useMemo(() => filterBySearch(allAttendees), [allAttendees, searchQuery]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-5 sm:space-y-8">
       {/* Official Organizers & Partners Banner */}
-      <div className="w-full flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white/[0.02] border border-purple-500/20 backdrop-blur-md shadow-lg shadow-purple-950/20">
+      <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl glass-card shadow-lg shadow-purple-950/20">
         <div className="flex items-center gap-2 text-xs font-mono font-bold text-purple-300/80 uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5 text-purple-400" />
           <span>Organized by IIT Bombay E-Cell & KMCT Kasaragod</span>
         </div>
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-          <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow brightness-110 hover:scale-105 transition-all" title="E-Cell IIT Bombay" />
-          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
-          <img src="/logos/nec-iitb.png" alt="NEC 2026" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="National Entrepreneurship Challenge 2026" />
-          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
-          <img src="/logos/kmct-college.png" alt="KMCT College" className="h-5 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="KMCT College of Engineering for Emerging Technologies and Management" />
-          <div className="w-px h-5 bg-purple-500/30 hidden sm:block" />
-          <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-6 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all" title="NxT Byte E-Cell" />
+        <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto no-scrollbar w-full sm:w-auto py-1 justify-center sm:justify-end">
+          <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-5 sm:h-7 w-auto object-contain filter drop-shadow brightness-110 hover:scale-105 transition-all shrink-0" title="E-Cell IIT Bombay" />
+          <div className="w-px h-4 bg-purple-500/30 shrink-0" />
+          <img src="/logos/nec-iitb.png" alt="NEC 2026" className="h-5 sm:h-7 w-auto object-contain filter drop-shadow hover:scale-105 transition-all shrink-0" title="National Entrepreneurship Challenge 2026" />
+          <div className="w-px h-4 bg-purple-500/30 shrink-0" />
+          <img src="/logos/kmct-college.png" alt="KMCT College" className="h-4 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all shrink-0" title="KMCT College of Engineering" />
+          <div className="w-px h-4 bg-purple-500/30 shrink-0" />
+          <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-4.5 sm:h-6 w-auto object-contain filter drop-shadow hover:scale-105 transition-all shrink-0" title="NxT Byte E-Cell" />
         </div>
       </div>
 
       {/* Top Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-purple-900/40 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-purple-900/40 pb-4 sm:pb-6">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Live Attendance & Pass Verification
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Live Attendance & Pass Desk
             </h1>
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-500/40">
+            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/70 text-emerald-400 border border-emerald-500/40">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              Live Attendance Desk
+              Real-time Synced
             </span>
           </div>
           <p className="text-xs sm:text-sm text-purple-300/70 mt-1">
@@ -248,11 +248,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Action Controls */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full md:w-auto pb-1 sm:pb-0">
           <button
             onClick={() => fetchDashboardData()}
             disabled={refreshing}
-            className="p-2.5 rounded-xl bg-purple-950/50 hover:bg-purple-900 text-purple-300 border border-purple-700/40 transition-colors"
+            className="p-2.5 rounded-xl bg-purple-950/60 hover:bg-purple-900 text-purple-300 border border-purple-700/40 transition-colors shrink-0 active:scale-95"
             title="Refresh stats"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => setIsManualModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors shrink-0 active:scale-95"
           >
             <Plus className="w-4 h-4 text-purple-400" />
             <span>Add Ticket</span>
@@ -268,7 +268,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => setIsImportModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors shrink-0 active:scale-95"
           >
             <UploadCloud className="w-4 h-4 text-purple-400" />
             <span>Import CSV</span>
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => api.downloadAttendanceCsv()}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-purple-950/70 hover:bg-purple-900 text-purple-200 border border-purple-600/40 transition-colors shrink-0 active:scale-95"
           >
             <Download className="w-4 h-4 text-purple-400" />
             <span>Export CSV</span>
@@ -284,10 +284,10 @@ export default function AdminDashboard() {
 
           <Link
             to="/scanner"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-glow-purple transition-all"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-glow-purple transition-all shrink-0 active:scale-95"
           >
             <ScanLine className="w-4 h-4 animate-pulse" />
-            <span>Entry Scanner</span>
+            <span>Scanner</span>
           </Link>
         </div>
       </div>
@@ -379,7 +379,7 @@ export default function AdminDashboard() {
               <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                 activeTab === 'all' ? 'bg-purple-800 text-white' : 'bg-purple-900 text-purple-200'
               }`}>
-                {allAttendees.length || 50}
+                {allAttendees.length}
               </span>
             </button>
 
@@ -426,115 +426,179 @@ export default function AdminDashboard() {
 
         {/* Tab 1: Present / Checked In Attendees */}
         {activeTab === 'present' && (
-          <div className="overflow-x-auto">
+          <div>
             {filteredCheckedIn.length > 0 ? (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-purple-950/50 text-[11px] uppercase font-bold text-purple-300/80 tracking-wider border-b border-purple-900/30">
-                  <tr>
-                    <th className="py-3.5 px-4 sm:px-6">Check-in Time</th>
-                    <th className="py-3.5 px-4 sm:px-6">Participant</th>
-                    <th className="py-3.5 px-4 sm:px-6">Ticket ID</th>
-                    <th className="py-3.5 px-4 sm:px-6">College / Course</th>
-                    <th className="py-3.5 px-4 sm:px-6">Verified By</th>
-                    <th className="py-3.5 px-4 sm:px-6 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-purple-900/20 text-purple-100">
-                  {filteredCheckedIn.map((ticket) => (
-                    <tr key={ticket.ticketId} className="hover:bg-emerald-950/20 transition-colors">
-                      {/* Check-in Time */}
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <div className="flex flex-col">
-                          <span className="font-mono text-xs text-emerald-400 font-bold flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                            {formatTime(ticket.checkedInAt)}
-                          </span>
-                          <span className="text-[10px] text-purple-300/70 mt-0.5">
-                            {getRelativeTime(ticket.checkedInAt)}
-                          </span>
-                        </div>
-                      </td>
+              <>
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-purple-950/50 text-[11px] uppercase font-bold text-purple-300/80 tracking-wider border-b border-purple-900/30">
+                      <tr>
+                        <th className="py-3.5 px-4 sm:px-6">Check-in Time</th>
+                        <th className="py-3.5 px-4 sm:px-6">Participant</th>
+                        <th className="py-3.5 px-4 sm:px-6">Ticket ID</th>
+                        <th className="py-3.5 px-4 sm:px-6">College / Course</th>
+                        <th className="py-3.5 px-4 sm:px-6">Verified By</th>
+                        <th className="py-3.5 px-4 sm:px-6 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-purple-900/20 text-purple-100">
+                      {filteredCheckedIn.map((ticket) => (
+                        <tr key={ticket.ticketId} className="hover:bg-emerald-950/20 transition-colors">
+                          <td className="py-3.5 px-4 sm:px-6">
+                            <div className="flex flex-col">
+                              <span className="font-mono text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                {formatTime(ticket.checkedInAt)}
+                              </span>
+                              <span className="text-[10px] text-purple-300/70 mt-0.5">
+                                {getRelativeTime(ticket.checkedInAt)}
+                              </span>
+                            </div>
+                          </td>
 
-                      {/* Participant */}
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-xs border border-emerald-400/30 shadow-sm shrink-0">
+                          <td className="py-3.5 px-4 sm:px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-xs border border-emerald-400/30 shadow-sm shrink-0">
+                                {ticket.participantName ? ticket.participantName.charAt(0).toUpperCase() : 'P'}
+                              </div>
+                              <div>
+                                <div className="font-bold text-white text-sm">
+                                  {ticket.participantName}
+                                </div>
+                                <div className="flex items-center gap-2 text-[11px] text-purple-300/70 mt-0.5">
+                                  {ticket.phone && <span>{ticket.phone}</span>}
+                                  {ticket.email && <span className="truncate max-w-[150px]">{ticket.email}</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 font-mono text-xs">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-purple-200 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
+                                {ticket.ticketId}
+                              </span>
+                              <button
+                                onClick={() => handleCopyTicket(ticket.ticketId)}
+                                className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white transition-colors"
+                                title="Copy ticket ID"
+                              >
+                                {copiedId === ticket.ticketId ? (
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 text-xs text-purple-200">
+                            <div className="font-medium text-white truncate max-w-[200px]" title={ticket.college}>
+                              {ticket.college || 'KMCT College'}
+                            </div>
+                            <div className="text-[11px] text-purple-300/70 truncate max-w-[200px]">
+                              {ticket.course} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 text-xs">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">
+                              {ticket.checkedInBy || 'Attendance Desk'}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link
+                                to={`/ticket/${ticket.ticketId}`}
+                                className="p-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-300 hover:text-white transition-colors"
+                                title="View digital pass"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </Link>
+
+                              <button
+                                onClick={() => handleUndoCheckin(ticket)}
+                                disabled={actionLoadingId === ticket.ticketId}
+                                className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 border border-rose-800/40 transition-colors"
+                                title="Undo check-in"
+                              >
+                                <RotateCcw className={`w-4 h-4 ${actionLoadingId === ticket.ticketId ? 'animate-spin' : ''}`} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View (< md) - Clean, Uncrowded & Touch-friendly */}
+                <div className="block md:hidden p-2.5 sm:p-3 space-y-2.5">
+                  {filteredCheckedIn.map((ticket) => (
+                    <div key={ticket.ticketId} className="p-3.5 rounded-2xl glass-card border border-emerald-500/30 space-y-2.5 shadow-md">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 flex items-center justify-center font-bold text-white text-xs border border-emerald-400/30 shadow-[0_0_10px_rgba(16,185,129,0.3)] shrink-0">
                             {ticket.participantName ? ticket.participantName.charAt(0).toUpperCase() : 'P'}
                           </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">
-                              {ticket.participantName}
-                            </div>
-                            <div className="flex items-center gap-2 text-[11px] text-purple-300/70 mt-0.5">
-                              {ticket.phone && <span>{ticket.phone}</span>}
-                              {ticket.email && <span className="truncate max-w-[150px]">{ticket.email}</span>}
-                            </div>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-white text-sm truncate leading-tight">{ticket.participantName}</h4>
+                            <p className="text-[11px] text-purple-300/70 truncate">{ticket.course || 'Engineering'} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}</p>
                           </div>
                         </div>
-                      </td>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 shrink-0">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                          <span>Present</span>
+                        </span>
+                      </div>
 
-                      {/* Ticket ID */}
-                      <td className="py-3.5 px-4 sm:px-6 font-mono text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-purple-200 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-purple-900/30">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                          <span className="text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800/40 font-bold">
                             {ticket.ticketId}
                           </span>
                           <button
                             onClick={() => handleCopyTicket(ticket.ticketId)}
-                            className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white transition-colors"
-                            title="Copy ticket ID"
+                            className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white"
                           >
-                            {copiedId === ticket.ticketId ? (
-                              <Check className="w-3 h-3 text-emerald-400" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
-                            )}
+                            {copiedId === ticket.ticketId ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                           </button>
                         </div>
-                      </td>
-
-                      {/* College / Course */}
-                      <td className="py-3.5 px-4 sm:px-6 text-xs text-purple-200">
-                        <div className="font-medium text-white truncate max-w-[200px]" title={ticket.college}>
-                          {ticket.college || 'KMCT College'}
-                        </div>
-                        <div className="text-[11px] text-purple-300/70 truncate max-w-[200px]">
-                          {ticket.course} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}
-                        </div>
-                      </td>
-
-                      {/* Verified By */}
-                      <td className="py-3.5 px-4 sm:px-6 text-xs">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-950/60 text-emerald-400 border border-emerald-500/30">
-                          {ticket.checkedInBy || 'Attendance Desk'}
+                        <span className="text-[11px] text-emerald-400 font-mono font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {formatTime(ticket.checkedInAt)}
                         </span>
-                      </td>
+                      </div>
 
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 sm:px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            to={`/ticket/${ticket.ticketId}`}
-                            className="p-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-300 hover:text-white transition-colors"
-                            title="View digital pass"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Link>
-
-                          <button
-                            onClick={() => handleUndoCheckin(ticket)}
-                            disabled={actionLoadingId === ticket.ticketId}
-                            className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 hover:text-rose-100 border border-rose-800/40 transition-colors"
-                            title="Undo check-in"
-                          >
-                            <RotateCcw className={`w-4 h-4 ${actionLoadingId === ticket.ticketId ? 'animate-spin' : ''}`} />
-                          </button>
+                      {ticket.college && (
+                        <div className="text-[11px] text-purple-300/75 truncate">
+                          {ticket.college}
                         </div>
-                      </td>
-                    </tr>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-purple-900/30">
+                        <Link
+                          to={`/ticket/${ticket.ticketId}`}
+                          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/70 text-purple-200 border border-purple-800/40 text-xs font-semibold transition-all active:scale-95"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>View Pass</span>
+                        </Link>
+                        <button
+                          onClick={() => handleUndoCheckin(ticket)}
+                          disabled={actionLoadingId === ticket.ticketId}
+                          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-rose-950/50 hover:bg-rose-900/70 text-rose-300 border border-rose-800/40 text-xs font-bold transition-all active:scale-95"
+                        >
+                          <RotateCcw className={`w-3.5 h-3.5 ${actionLoadingId === ticket.ticketId ? 'animate-spin' : ''}`} />
+                          <span>Undo Entry</span>
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
             ) : (
               <div className="p-8 sm:p-12 text-center space-y-4">
                 <div className="w-14 h-14 rounded-full bg-emerald-950/50 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-glow-green">
@@ -594,117 +658,183 @@ export default function AdminDashboard() {
 
         {/* Tab 2: Awaiting Attendees (Absent) */}
         {activeTab === 'awaiting' && (
-          <div className="overflow-x-auto">
+          <div>
             {filteredAwaiting.length > 0 ? (
-              <table className="w-full text-left text-sm">
-                <thead className="bg-purple-950/50 text-[11px] uppercase font-bold text-purple-300/80 tracking-wider border-b border-purple-900/30">
-                  <tr>
-                    <th className="py-3.5 px-4 sm:px-6">Status</th>
-                    <th className="py-3.5 px-4 sm:px-6">Participant</th>
-                    <th className="py-3.5 px-4 sm:px-6">Ticket ID</th>
-                    <th className="py-3.5 px-4 sm:px-6">College / Course</th>
-                    <th className="py-3.5 px-4 sm:px-6">Contact</th>
-                    <th className="py-3.5 px-4 sm:px-6 text-right">Desk Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-purple-900/20 text-purple-100">
-                  {filteredAwaiting.map((ticket) => (
-                    <tr key={ticket.ticketId} className="hover:bg-amber-950/20 transition-colors">
-                      {/* Status */}
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-950/60 text-amber-300 border border-amber-500/30">
-                          <Clock className="w-3 h-3" />
-                          Awaiting
-                        </span>
-                      </td>
+              <>
+                {/* Desktop Table View (>= md) */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-purple-950/50 text-[11px] uppercase font-bold text-purple-300/80 tracking-wider border-b border-purple-900/30">
+                      <tr>
+                        <th className="py-3.5 px-4 sm:px-6">Status</th>
+                        <th className="py-3.5 px-4 sm:px-6">Participant</th>
+                        <th className="py-3.5 px-4 sm:px-6">Ticket ID</th>
+                        <th className="py-3.5 px-4 sm:px-6">College / Course</th>
+                        <th className="py-3.5 px-4 sm:px-6">Contact</th>
+                        <th className="py-3.5 px-4 sm:px-6 text-right">Desk Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-purple-900/20 text-purple-100">
+                      {filteredAwaiting.map((ticket) => (
+                        <tr key={ticket.ticketId} className="hover:bg-amber-950/20 transition-colors">
+                          <td className="py-3.5 px-4 sm:px-6">
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-950/60 text-amber-300 border border-amber-500/30">
+                              <Clock className="w-3 h-3" />
+                              Awaiting
+                            </span>
+                          </td>
 
-                      {/* Participant */}
-                      <td className="py-3.5 px-4 sm:px-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-700 to-indigo-800 flex items-center justify-center font-bold text-white text-xs border border-purple-500/30 shadow-sm shrink-0">
+                          <td className="py-3.5 px-4 sm:px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-700 to-indigo-800 flex items-center justify-center font-bold text-white text-xs border border-purple-500/30 shadow-sm shrink-0">
+                                {ticket.participantName ? ticket.participantName.charAt(0).toUpperCase() : 'P'}
+                              </div>
+                              <div>
+                                <div className="font-bold text-white text-sm">
+                                  {ticket.participantName}
+                                </div>
+                                <div className="text-[11px] text-purple-300/70 mt-0.5 truncate max-w-[180px]">
+                                  {ticket.email || '--'}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 font-mono text-xs">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-purple-200 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
+                                {ticket.ticketId}
+                              </span>
+                              <button
+                                onClick={() => handleCopyTicket(ticket.ticketId)}
+                                className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white transition-colors"
+                                title="Copy ticket ID"
+                              >
+                                {copiedId === ticket.ticketId ? (
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 text-xs text-purple-200">
+                            <div className="font-medium text-white truncate max-w-[200px]" title={ticket.college}>
+                              {ticket.college || 'KMCT College'}
+                            </div>
+                            <div className="text-[11px] text-purple-300/70 truncate max-w-[200px]">
+                              {ticket.course} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}
+                            </div>
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 text-xs">
+                            {ticket.phone ? (
+                              <a
+                                href={`tel:${ticket.phone}`}
+                                className="inline-flex items-center gap-1.5 text-purple-300 hover:text-white font-mono hover:underline"
+                              >
+                                <Phone className="w-3 h-3 text-emerald-400" />
+                                <span>{ticket.phone}</span>
+                              </a>
+                            ) : (
+                              <span className="text-purple-400/50">--</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 sm:px-6 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Link
+                                to={`/ticket/${ticket.ticketId}`}
+                                className="p-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-300 hover:text-white transition-colors"
+                                title="View digital pass"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </Link>
+
+                              <button
+                                onClick={() => handleQuickCheckin(ticket)}
+                                disabled={actionLoadingId === ticket.ticketId}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>{actionLoadingId === ticket.ticketId ? 'Checking...' : 'Check In'}</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards View (< md) */}
+                <div className="block md:hidden p-2.5 sm:p-3 space-y-2.5">
+                  {filteredAwaiting.map((ticket) => (
+                    <div key={ticket.ticketId} className="p-3.5 rounded-2xl glass-card border border-amber-500/30 space-y-2.5 shadow-md">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-700 to-indigo-800 flex items-center justify-center font-bold text-white text-xs border border-purple-500/30 shrink-0">
                             {ticket.participantName ? ticket.participantName.charAt(0).toUpperCase() : 'P'}
                           </div>
-                          <div>
-                            <div className="font-bold text-white text-sm">
-                              {ticket.participantName}
-                            </div>
-                            <div className="text-[11px] text-purple-300/70 mt-0.5 truncate max-w-[180px]">
-                              {ticket.email || '--'}
-                            </div>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-white text-sm truncate leading-tight">{ticket.participantName}</h4>
+                            <p className="text-[11px] text-purple-300/70 truncate">{ticket.course || 'Engineering'} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}</p>
                           </div>
                         </div>
-                      </td>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40 shrink-0">
+                          <Clock className="w-3 h-3 text-amber-400" />
+                          <span>Awaiting</span>
+                        </span>
+                      </div>
 
-                      {/* Ticket ID */}
-                      <td className="py-3.5 px-4 sm:px-6 font-mono text-xs">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-purple-200 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
+                      <div className="flex items-center justify-between text-xs pt-1 border-t border-purple-900/30">
+                        <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                          <span className="text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800/40 font-bold">
                             {ticket.ticketId}
                           </span>
                           <button
                             onClick={() => handleCopyTicket(ticket.ticketId)}
-                            className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white transition-colors"
-                            title="Copy ticket ID"
+                            className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white"
                           >
-                            {copiedId === ticket.ticketId ? (
-                              <Check className="w-3 h-3 text-emerald-400" />
-                            ) : (
-                              <Copy className="w-3 h-3" />
-                            )}
+                            {copiedId === ticket.ticketId ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                           </button>
                         </div>
-                      </td>
-
-                      {/* College / Course */}
-                      <td className="py-3.5 px-4 sm:px-6 text-xs text-purple-200">
-                        <div className="font-medium text-white truncate max-w-[200px]" title={ticket.college}>
-                          {ticket.college || 'KMCT College'}
-                        </div>
-                        <div className="text-[11px] text-purple-300/70 truncate max-w-[200px]">
-                          {ticket.course} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}
-                        </div>
-                      </td>
-
-                      {/* Contact */}
-                      <td className="py-3.5 px-4 sm:px-6 text-xs">
                         {ticket.phone ? (
-                          <a
-                            href={`tel:${ticket.phone}`}
-                            className="inline-flex items-center gap-1.5 text-purple-300 hover:text-white font-mono hover:underline"
-                          >
+                          <a href={`tel:${ticket.phone}`} className="text-[11px] text-purple-300 hover:text-white flex items-center gap-1">
                             <Phone className="w-3 h-3 text-emerald-400" />
                             <span>{ticket.phone}</span>
                           </a>
-                        ) : (
-                          <span className="text-purple-400/50">--</span>
-                        )}
-                      </td>
+                        ) : null}
+                      </div>
 
-                      {/* Desk Action: Quick Check-in */}
-                      <td className="py-3.5 px-4 sm:px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Link
-                            to={`/ticket/${ticket.ticketId}`}
-                            className="p-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-300 hover:text-white transition-colors"
-                            title="View digital pass"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </Link>
-
-                          <button
-                            onClick={() => handleQuickCheckin(ticket)}
-                            disabled={actionLoadingId === ticket.ticketId}
-                            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>{actionLoadingId === ticket.ticketId ? 'Checking...' : 'Check In'}</span>
-                          </button>
+                      {ticket.college && (
+                        <div className="text-[11px] text-purple-300/75 truncate">
+                          {ticket.college}
                         </div>
-                      </td>
-                    </tr>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-purple-900/30">
+                        <Link
+                          to={`/ticket/${ticket.ticketId}`}
+                          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/70 text-purple-200 border border-purple-800/40 text-xs font-semibold transition-all active:scale-95"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>View Pass</span>
+                        </Link>
+                        <button
+                          onClick={() => handleQuickCheckin(ticket)}
+                          disabled={actionLoadingId === ticket.ticketId}
+                          className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all active:scale-95"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>{actionLoadingId === ticket.ticketId ? 'Checking...' : 'Check In'}</span>
+                        </button>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </>
             ) : (
               <div className="p-12 text-center space-y-2">
                 <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto" />
@@ -717,111 +847,210 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Tab 3: All Registrations (38) */}
+        {/* Tab 3: All Registrations */}
         {activeTab === 'all' && (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-purple-950/50 text-[11px] uppercase font-bold text-purple-300/80 tracking-wider border-b border-purple-900/30">
-                <tr>
-                  <th className="py-3.5 px-4 sm:px-6">Attendance Status</th>
-                  <th className="py-3.5 px-4 sm:px-6">Participant</th>
-                  <th className="py-3.5 px-4 sm:px-6">Ticket ID</th>
-                  <th className="py-3.5 px-4 sm:px-6">College / Course</th>
-                  <th className="py-3.5 px-4 sm:px-6">Scan Time</th>
-                  <th className="py-3.5 px-4 sm:px-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-purple-900/20 text-purple-100">
-                {filteredAll.map((ticket) => (
-                  <tr key={ticket.ticketId} className="hover:bg-purple-900/10 transition-colors">
-                    {/* Attendance Status */}
-                    <td className="py-3.5 px-4 sm:px-6">
-                      {ticket.checkedIn ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 shadow-sm">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>PRESENT</span>
-                        </span>
-                      ) : ticket.status === 'CANCELLED' ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-500/50">
-                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
-                          <span>CANCELLED</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-500/50">
-                          <Clock className="w-3.5 h-3.5 text-amber-400" />
-                          <span>AWAITING</span>
-                        </span>
-                      )}
-                    </td>
+          <div>
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-purple-950/50 text-[11px] uppercase font-bold text-purple-300/80 tracking-wider border-b border-purple-900/30">
+                  <tr>
+                    <th className="py-3.5 px-4 sm:px-6">Attendance Status</th>
+                    <th className="py-3.5 px-4 sm:px-6">Participant</th>
+                    <th className="py-3.5 px-4 sm:px-6">Ticket ID</th>
+                    <th className="py-3.5 px-4 sm:px-6">College / Course</th>
+                    <th className="py-3.5 px-4 sm:px-6">Scan Time</th>
+                    <th className="py-3.5 px-4 sm:px-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-purple-900/20 text-purple-100">
+                  {filteredAll.map((ticket) => (
+                    <tr key={ticket.ticketId} className="hover:bg-purple-900/10 transition-colors">
+                      <td className="py-3.5 px-4 sm:px-6">
+                        {ticket.checkedIn ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/50 shadow-sm">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>PRESENT</span>
+                          </span>
+                        ) : ticket.status === 'CANCELLED' ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-500/50">
+                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                            <span>CANCELLED</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-950/80 text-amber-300 border border-amber-500/50">
+                            <Clock className="w-3.5 h-3.5 text-amber-400" />
+                            <span>AWAITING</span>
+                          </span>
+                        )}
+                      </td>
 
-                    {/* Participant */}
-                    <td className="py-3.5 px-4 sm:px-6">
-                      <div className="font-bold text-white text-sm">
-                        {ticket.participantName}
-                      </div>
-                      <div className="text-[11px] text-purple-300/70 mt-0.5">
-                        {ticket.phone} &bull; {ticket.email}
-                      </div>
-                    </td>
+                      <td className="py-3.5 px-4 sm:px-6">
+                        <div className="font-bold text-white text-sm">
+                          {ticket.participantName}
+                        </div>
+                        <div className="text-[11px] text-purple-300/70 mt-0.5">
+                          {ticket.phone} &bull; {ticket.email}
+                        </div>
+                      </td>
 
-                    {/* Ticket ID */}
-                    <td className="py-3.5 px-4 sm:px-6 font-mono text-xs">
-                      <span className="font-semibold text-purple-200 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
+                      <td className="py-3.5 px-4 sm:px-6 font-mono text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-purple-200 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-800/40">
+                            {ticket.ticketId}
+                          </span>
+                          <button
+                            onClick={() => handleCopyTicket(ticket.ticketId)}
+                            className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white"
+                          >
+                            {copiedId === ticket.ticketId ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                          </button>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 sm:px-6 text-xs text-purple-200">
+                        <div className="font-medium text-white truncate max-w-[200px]">
+                          {ticket.college || 'KMCT College'}
+                        </div>
+                        <div className="text-[11px] text-purple-300/70 truncate max-w-[200px]">
+                          {ticket.course}
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 sm:px-6 text-xs font-mono text-purple-300">
+                        {ticket.checkedIn ? formatTime(ticket.checkedInAt) : '--:--'}
+                      </td>
+
+                      <td className="py-3.5 px-4 sm:px-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            to={`/ticket/${ticket.ticketId}`}
+                            className="p-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-300 hover:text-white transition-colors"
+                            title="View pass"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
+
+                          {ticket.checkedIn ? (
+                            <button
+                              onClick={() => handleUndoCheckin(ticket)}
+                              disabled={actionLoadingId === ticket.ticketId}
+                              className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/40 transition-colors"
+                              title="Undo check-in"
+                            >
+                              <RotateCcw className={`w-4 h-4 ${actionLoadingId === ticket.ticketId ? 'animate-spin' : ''}`} />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleQuickCheckin(ticket)}
+                              disabled={actionLoadingId === ticket.ticketId}
+                              className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Check In</span>
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View (< md) */}
+            <div className="block md:hidden p-2.5 sm:p-3 space-y-2.5">
+              {filteredAll.map((ticket) => (
+                <div key={ticket.ticketId} className="p-3.5 rounded-2xl glass-card space-y-2.5 shadow-md">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-white text-xs border shrink-0 ${
+                        ticket.checkedIn 
+                          ? 'bg-gradient-to-br from-emerald-600 to-teal-700 border-emerald-400/30 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                          : 'bg-gradient-to-br from-purple-700 to-indigo-800 border-purple-500/30'
+                      }`}>
+                        {ticket.participantName ? ticket.participantName.charAt(0).toUpperCase() : 'P'}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-white text-sm truncate leading-tight">{ticket.participantName}</h4>
+                        <p className="text-[11px] text-purple-300/70 truncate">{ticket.course || 'Engineering'} {ticket.yearOfStudy ? `(${ticket.yearOfStudy})` : ''}</p>
+                      </div>
+                    </div>
+                    {ticket.checkedIn ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 shrink-0">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>Present</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40 shrink-0">
+                        <Clock className="w-3 h-3 text-amber-400" />
+                        <span>Awaiting</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-purple-900/30">
+                    <div className="flex items-center gap-1.5 font-mono text-[11px]">
+                      <span className="text-purple-300 bg-purple-950/80 px-2 py-0.5 rounded border border-purple-800/40 font-bold">
                         {ticket.ticketId}
                       </span>
-                    </td>
+                      <button
+                        onClick={() => handleCopyTicket(ticket.ticketId)}
+                        className="p-1 hover:bg-purple-900/60 rounded text-purple-400 hover:text-white"
+                      >
+                        {copiedId === ticket.ticketId ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                    </div>
+                    {ticket.checkedIn ? (
+                      <span className="text-[11px] text-emerald-400 font-mono font-medium flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        {formatTime(ticket.checkedInAt)}
+                      </span>
+                    ) : ticket.phone ? (
+                      <a href={`tel:${ticket.phone}`} className="text-[11px] text-purple-300 hover:text-white flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-emerald-400" />
+                        <span>{ticket.phone}</span>
+                      </a>
+                    ) : null}
+                  </div>
 
-                    {/* College / Course */}
-                    <td className="py-3.5 px-4 sm:px-6 text-xs text-purple-200">
-                      <div className="font-medium text-white truncate max-w-[200px]">
-                        {ticket.college || 'KMCT College'}
-                      </div>
-                      <div className="text-[11px] text-purple-300/70 truncate max-w-[200px]">
-                        {ticket.course}
-                      </div>
-                    </td>
+                  {ticket.college && (
+                    <div className="text-[11px] text-purple-300/75 truncate">
+                      {ticket.college}
+                    </div>
+                  )}
 
-                    {/* Scan Time */}
-                    <td className="py-3.5 px-4 sm:px-6 text-xs font-mono text-purple-300">
-                      {ticket.checkedIn ? formatTime(ticket.checkedInAt) : '--:--'}
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 sm:px-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Link
-                          to={`/ticket/${ticket.ticketId}`}
-                          className="p-1.5 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-300 hover:text-white transition-colors"
-                          title="View pass"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-
-                        {ticket.checkedIn ? (
-                          <button
-                            onClick={() => handleUndoCheckin(ticket)}
-                            disabled={actionLoadingId === ticket.ticketId}
-                            className="p-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/40 transition-colors"
-                            title="Undo check-in"
-                          >
-                            <RotateCcw className={`w-4 h-4 ${actionLoadingId === ticket.ticketId ? 'animate-spin' : ''}`} />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleQuickCheckin(ticket)}
-                            disabled={actionLoadingId === ticket.ticketId}
-                            className="flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-glow-green transition-all"
-                          >
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Check In</span>
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-purple-900/30">
+                    <Link
+                      to={`/ticket/${ticket.ticketId}`}
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-purple-950/60 hover:bg-purple-900/70 text-purple-200 border border-purple-800/40 text-xs font-semibold transition-all active:scale-95"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>View Pass</span>
+                    </Link>
+                    {ticket.checkedIn ? (
+                      <button
+                        onClick={() => handleUndoCheckin(ticket)}
+                        disabled={actionLoadingId === ticket.ticketId}
+                        className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-rose-950/50 hover:bg-rose-900/70 text-rose-300 border border-rose-800/40 text-xs font-bold transition-all active:scale-95"
+                      >
+                        <RotateCcw className={`w-3.5 h-3.5 ${actionLoadingId === ticket.ticketId ? 'animate-spin' : ''}`} />
+                        <span>Undo Entry</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleQuickCheckin(ticket)}
+                        disabled={actionLoadingId === ticket.ticketId}
+                        className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all active:scale-95"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>{actionLoadingId === ticket.ticketId ? 'Checking...' : 'Check In'}</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
