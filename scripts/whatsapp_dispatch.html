@@ -134,6 +134,43 @@
       <input type="text" class="search-box" id="search" placeholder="🔍 Search by name, phone, ticket ID..." oninput="filterCards()">
     </header>
 
+    <div class="auto-panel" style="background:linear-gradient(135deg, #16082e, #0c041c); border:1px solid #a855f760; border-radius:16px; padding:20px; margin-bottom:24px; box-shadow:0 8px 30px rgba(168,85,247,0.15);">
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px;">
+        <div>
+          <h2 style="font-size:18px; color:#c084fc; margin-bottom:4px;">⚡ Automated WhatsApp Batch Dispatcher</h2>
+          <p style="font-size:13px; color:#cbd5e1;">Automatically cycles through all unsent attendees in your WhatsApp tab so you can dispatch all together.</p>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
+          <label style="font-size:12px; color:#cbd5e1; display:flex; align-items:center; gap:6px;">
+            <span>Delay:</span>
+            <select id="auto-delay" style="background:#1e0b36; color:#fff; border:1px solid #a855f7; border-radius:8px; padding:6px 10px; font-weight:bold;">
+              <option value="4000">4 seconds</option>
+              <option value="6000" selected>6 seconds (Recommended)</option>
+              <option value="8000">8 seconds</option>
+            </select>
+          </label>
+          <button id="btn-start-auto" class="btn btn-primary" onclick="startAutoDispatch()" style="padding:10px 22px; font-size:14px; font-weight:bold; box-shadow:0 0 20px rgba(37,211,102,0.4);">
+            🚀 DISPATCH ALL TOGETHER
+          </button>
+          <button id="btn-pause-auto" class="btn btn-secondary" onclick="pauseAutoDispatch()" style="display:none; padding:10px 18px;">
+            ⏸️ Pause
+          </button>
+          <button id="btn-stop-auto" class="btn btn-outline" onclick="stopAutoDispatch()" style="display:none; padding:10px 18px; border-color:#ef4444; color:#ef4444;">
+            ⏹️ Stop
+          </button>
+        </div>
+      </div>
+      <div id="auto-status-bar" style="display:none; margin-top:16px; padding-top:12px; border-top:1px solid #7c3aed30;">
+        <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;">
+          <span id="auto-status-text" style="color:#f8fafc; font-weight:bold;">Starting auto-dispatcher...</span>
+          <span id="auto-progress-text" style="color:#c084fc; font-weight:bold; font-family:monospace;">0 / 70</span>
+        </div>
+        <div style="width:100%; height:10px; background:#1e0b36; border-radius:5px; overflow:hidden; border:1px solid #7c3aed40;">
+          <div id="auto-progress-fill" style="width:0%; height:100%; background:linear-gradient(90deg, #25d366, #38bdf8); transition:width 0.3s;"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="grid" id="grid">
       
         <div class="card" id="card-ILM-KMCT-MUTBSJW5-AED124" data-tid="ILM-KMCT-MUTBSJW5-AED124">
@@ -1680,6 +1717,82 @@
   </div>
 
   <script>
+    let autoTimer = null;
+    let isAutoRunning = false;
+    let autoWindow = null;
+
+    function startAutoDispatch() {
+      const cards = Array.from(document.querySelectorAll('.card:not(.is-sent)'));
+      if (cards.length === 0) {
+        alert('All attendees are already marked as Sent! If you want to resend, uncheck the sent boxes.');
+        return;
+      }
+
+      isAutoRunning = true;
+      document.getElementById('btn-start-auto').style.display = 'none';
+      document.getElementById('btn-pause-auto').style.display = 'inline-block';
+      document.getElementById('btn-stop-auto').style.display = 'inline-block';
+      document.getElementById('auto-status-bar').style.display = 'block';
+
+      // Open reusable WhatsApp window/tab
+      autoWindow = window.open('about:blank', 'illu_whatsapp_sender');
+      runNextInQueue();
+    }
+
+    function runNextInQueue() {
+      if (!isAutoRunning) return;
+      const cards = Array.from(document.querySelectorAll('.card:not(.is-sent)'));
+      const total = document.querySelectorAll('.card').length;
+      const sent = document.querySelectorAll('.card.is-sent').length;
+
+      if (cards.length === 0) {
+        document.getElementById('auto-status-text').textContent = '🎉 All 70 attendees dispatched successfully!';
+        stopAutoDispatch();
+        alert('🎉 All participants have been dispatched on WhatsApp!');
+        return;
+      }
+
+      const currentCard = cards[0];
+      const tid = currentCard.getAttribute('data-tid');
+      const name = currentCard.querySelector('h3').textContent;
+      const webLink = currentCard.querySelector('.btn-primary').getAttribute('href');
+
+      document.getElementById('auto-status-text').textContent = `👉 Sending to ${name} (${tid})... (Press Enter in WhatsApp tab)`;
+      document.getElementById('auto-progress-text').textContent = `${sent} / ${total}`;
+      document.getElementById('auto-progress-fill').style.width = Math.round((sent / total) * 100) + '%';
+
+      // Re-use single WhatsApp tab
+      if (autoWindow && !autoWindow.closed) {
+        autoWindow.location.href = webLink;
+      } else {
+        autoWindow = window.open(webLink, 'illu_whatsapp_sender');
+      }
+
+      // Mark as sent
+      markSent(tid);
+
+      const delay = parseInt(document.getElementById('auto-delay').value) || 6000;
+      autoTimer = setTimeout(runNextInQueue, delay);
+    }
+
+    function pauseAutoDispatch() {
+      isAutoRunning = false;
+      clearTimeout(autoTimer);
+      document.getElementById('btn-pause-auto').style.display = 'none';
+      document.getElementById('btn-start-auto').textContent = '▶️ Resume Auto Dispatch';
+      document.getElementById('btn-start-auto').style.display = 'inline-block';
+      document.getElementById('auto-status-text').textContent = '⏸️ Paused. Click Resume to continue.';
+    }
+
+    function stopAutoDispatch() {
+      isAutoRunning = false;
+      clearTimeout(autoTimer);
+      document.getElementById('btn-start-auto').textContent = '🚀 DISPATCH ALL TOGETHER';
+      document.getElementById('btn-start-auto').style.display = 'inline-block';
+      document.getElementById('btn-pause-auto').style.display = 'none';
+      document.getElementById('btn-stop-auto').style.display = 'none';
+    }
+
     function updateCounts() {
       const total = document.querySelectorAll('.card').length;
       const sent = document.querySelectorAll('.card.is-sent').length;
