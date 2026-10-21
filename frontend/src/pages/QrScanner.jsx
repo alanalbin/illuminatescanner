@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Html5Qrcode } from 'html5-qrcode';
 import confetti from 'canvas-confetti';
@@ -56,6 +56,7 @@ export default function QrScanner() {
   const [actionNotice, setActionNotice] = useState(null);
   const [hasTorch, setHasTorch] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [isFeedExpanded, setIsFeedExpanded] = useState(false);
 
   const html5QrCodeRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -478,7 +479,6 @@ export default function QrScanner() {
     setTimeout(() => setCopiedId(false), 2000);
   };
 
-  const [isFeedExpanded, setIsFeedExpanded] = useState(false);
 
   // Determine current result status
   const isCheckedIn = scanResult && (
@@ -492,6 +492,17 @@ export default function QrScanner() {
   const isUndone = scanResult && scanResult.status === 'UNDONE';
   const isUnrecognized = scanResult && (scanResult.status === 'INVALID' || (!scanResult.valid && !isCheckedIn && !isUndone));
   const isCancelled = scanResult && scanResult.status === 'CANCELLED';
+
+  const matchingManualSuggestions = useMemo(() => {
+    if (!manualInput || manualInput.trim().length < 2) return [];
+    const q = manualInput.toLowerCase().trim();
+    const all = localAttendanceStore.getTickets();
+    return all.filter(t => 
+      t.participantName?.toLowerCase().includes(q) ||
+      t.ticketId?.toLowerCase().includes(q) ||
+      t.phone?.includes(q)
+    ).slice(0, 4);
+  }, [manualInput]);
 
   return (
     <div className="w-full max-w-md mx-auto px-3 sm:px-4 pt-2 sm:pt-4 flex flex-col gap-3 pb-24 sm:pb-12">
@@ -583,25 +594,57 @@ export default function QrScanner() {
 
       </div>
 
-      {/* Manual Entry Dropdown Form */}
+      {/* Manual Entry Dropdown Form with Live Quick Match Suggestions */}
       {showManual && (
-        <form onSubmit={handleManualSubmit} className="p-2.5 rounded-2xl glass-card flex gap-2 animate-sheet-up">
-          <input
-            type="text"
-            placeholder="Search Ticket ID (e.g. ILM-KMCT-...) or name..."
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            className="flex-1 px-3 py-2 rounded-xl bg-dark-950/80 border border-purple-700/50 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
-            autoFocus
-          />
-          <button
-            type="submit"
-            disabled={loading || !manualInput.trim()}
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md disabled:opacity-50 transition-all"
-          >
-            Verify
-          </button>
-        </form>
+        <div className="space-y-1.5 animate-sheet-up">
+          <form onSubmit={handleManualSubmit} className="p-2.5 rounded-2xl glass-card flex gap-2">
+            <input
+              type="text"
+              placeholder="Search by Name, Phone, or Ticket ID..."
+              value={manualInput}
+              onChange={(e) => setManualInput(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-xl bg-dark-950/80 border border-purple-700/50 text-white text-xs font-mono focus:border-purple-400 focus:outline-none placeholder:text-purple-400/50"
+              autoFocus
+            />
+            <button
+              type="submit"
+              disabled={loading || !manualInput.trim()}
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md disabled:opacity-50 transition-all active:scale-95"
+            >
+              Verify
+            </button>
+          </form>
+
+          {/* Quick Match Suggestions Dropdown */}
+          {matchingManualSuggestions.length > 0 && (
+            <div className="p-2 rounded-xl bg-purple-950/95 border border-purple-600/40 space-y-1 backdrop-blur-xl shadow-xl">
+              <span className="text-[10px] font-bold uppercase text-purple-300/80 px-2 tracking-wider block">
+                Quick Match ({matchingManualSuggestions.length})
+              </span>
+              {matchingManualSuggestions.map(m => (
+                <button
+                  key={m.ticketId}
+                  type="button"
+                  onClick={() => {
+                    handleProcessQr(m.ticketId);
+                    setManualInput('');
+                  }}
+                  className="w-full flex items-center justify-between p-2 rounded-lg bg-dark-950/70 hover:bg-purple-900/60 border border-purple-800/30 text-left transition-all text-xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="font-bold text-white truncate text-[11px]">{m.participantName}</div>
+                    <div className="text-[10px] text-purple-300/70 font-mono truncate">{m.ticketId} &bull; {m.course || 'Engineering'}</div>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ml-2 shrink-0 ${
+                    m.checkedIn ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40' : 'bg-purple-900/80 text-purple-200'
+                  }`}>
+                    {m.checkedIn ? 'Checked In' : 'Tap to Check In'}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Camera Viewport / Scanning Area */}

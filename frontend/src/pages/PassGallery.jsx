@@ -186,7 +186,7 @@ export default function PassGallery() {
         </div>
       </div>
 
-      {/* Grid of 27 QR Passes */}
+      {/* Grid of Scannable QR Passes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredTickets.map((t, idx) => (
           <div
