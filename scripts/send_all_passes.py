@@ -65,15 +65,16 @@ def create_email_html(attendee, has_inline_image=False):
     ticket_id = attendee.get('ticketId')
     name = attendee.get('participantName')
     course = attendee.get('course', 'Engineering')
-    college = attendee.get('college', 'KMCT College of Engineering for Emerging Technologies and Management, Kasaragod')
     pass_url = f"https://illuminatescanner.vercel.app/ticket/{ticket_id}"
 
     pass_banner_html = ""
     if has_inline_image:
         pass_banner_html = f"""
         <tr>
-          <td align="center" style="padding:10px 0 24px 0;">
-            <img src="cid:pass_banner" alt="ILLUMINATE 2026 Entry Pass" style="width:100%;max-width:540px;border-radius:14px;display:block;border:1px solid #a855f760;box-shadow:0 8px 24px rgba(168,85,247,0.25);" />
+          <td align="center" style="padding:16px 0 20px 0;">
+            <a href="{pass_url}" target="_blank" style="text-decoration:none;">
+              <img src="cid:pass_banner" alt="ILLUMINATE 2026 Entry Pass" style="width:100%;max-width:540px;border-radius:14px;display:block;border:1px solid #a855f760;box-shadow:0 8px 24px rgba(168,85,247,0.25);" />
+            </a>
           </td>
         </tr>
         """
@@ -82,7 +83,7 @@ def create_email_html(attendee, has_inline_image=False):
     <!DOCTYPE html>
     <html>
     <head><meta charset="utf-8"></head>
-    <body style="margin:0;padding:0;background-color:#070312;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+    <body style="margin:0;padding:0;background-color:#070312;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f8fafc;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#070312;padding:24px 12px;">
         <tr>
           <td align="center">
@@ -90,37 +91,34 @@ def create_email_html(attendee, has_inline_image=False):
               
               <!-- Header -->
               <tr>
-                <td align="center" style="padding-bottom:20px;border-bottom:1px solid #7c3aed30;">
-                  <h1 style="margin:0;color:#c084fc;font-size:26px;letter-spacing:2px;font-weight:900;">ILLUMINATE 2026</h1>
-                  <p style="margin:6px 0 0 0;color:#a855f7;font-size:13px;font-weight:600;">E-Cell IIT Bombay &bull; KMCT College of Engineering (NxtBYTE)</p>
+                <td align="center" style="padding-bottom:18px;border-bottom:1px solid #7c3aed30;">
+                  <h1 style="margin:0;color:#c084fc;font-size:24px;letter-spacing:1px;font-weight:900;">🎟️ ILLUMINATE 2026</h1>
+                  <p style="margin:4px 0 0 0;color:#a855f7;font-size:12px;font-weight:bold;letter-spacing:1.5px;text-transform:uppercase;">OFFICIAL ENTRY PASS</p>
+                  <p style="margin:6px 0 0 0;color:#94a3b8;font-size:12px;font-weight:500;">E-Cell IIT Bombay &bull; KMCT College of Engineering (NxtBYTE)</p>
                 </td>
               </tr>
 
               <!-- Greeting -->
               <tr>
-                <td style="padding-top:24px;">
-                  <p style="font-size:16px;margin:0 0 12px 0;">Dear <strong style="color:#ffffff;">{name}</strong>,</p>
-                  <p style="font-size:14px;color:#cbd5e1;line-height:1.6;margin:0 0 20px 0;">
-                    Your seat is <strong>officially confirmed</strong> for the 6-Hour Offline Entrepreneurship Workshop! Below is your official entry pass with scannable QR verification for seamless check-in.
+                <td style="padding-top:22px;">
+                  <p style="font-size:16px;margin:0 0 10px 0;">Dear <strong style="color:#ffffff;">{name}</strong>,</p>
+                  <p style="font-size:14px;color:#cbd5e1;line-height:1.6;margin:0 0 18px 0;">
+                    Your seat is <strong>officially confirmed</strong> for the 6-Hour Offline Entrepreneurship Workshop!
                   </p>
                 </td>
               </tr>
 
-              <!-- Embedded Pass Image -->
-              {pass_banner_html}
-
-              <!-- Event Details Box -->
+              <!-- Registration Details Box (Matches WhatsApp Details) -->
               <tr>
                 <td>
-                  <table width="100%" style="background:#190c3a;border:1px solid #a855f750;border-radius:14px;padding:20px;margin-bottom:24px;">
+                  <table width="100%" style="background:#190c3a;border:1px solid #a855f750;border-radius:14px;padding:18px;margin-bottom:18px;">
                     <tr>
                       <td>
-                        <p style="margin:0 0 8px 0;font-size:11px;color:#a855f7;text-transform:uppercase;font-weight:bold;letter-spacing:1.5px;">CONFIRMED REGISTRATION DETAILS</p>
-                        <p style="margin:0 0 12px 0;font-family:monospace;font-size:17px;color:#38bdf8;font-weight:bold;letter-spacing:1px;">{ticket_id}</p>
-                        <table width="100%" cellpadding="3" cellspacing="0" style="color:#cbd5e1;font-size:13px;line-height:1.5;">
-                          <tr><td width="30%"><strong>Participant:</strong></td><td>{name}</td></tr>
-                          <tr><td><strong>Date:</strong></td><td><span style="color:#facc15;font-weight:bold;">22nd October 2026</span></td></tr>
-                          <tr><td><strong>Timing:</strong></td><td>10:00 a.m. to 4:00 p.m.</td></tr>
+                        <p style="margin:0 0 12px 0;font-size:11px;color:#a855f7;text-transform:uppercase;font-weight:bold;letter-spacing:1.5px;">📋 REGISTRATION DETAILS</p>
+                        <table width="100%" cellpadding="4" cellspacing="0" style="color:#cbd5e1;font-size:13px;line-height:1.5;">
+                          <tr><td width="28%"><strong>Ticket ID:</strong></td><td><code style="background:#38bdf820;color:#38bdf8;padding:2px 8px;border-radius:4px;font-family:monospace;font-size:13px;font-weight:bold;">{ticket_id}</code></td></tr>
+                          <tr><td><strong>Date:</strong></td><td><span style="color:#facc15;font-weight:bold;">Thursday, 22nd October 2026</span></td></tr>
+                          <tr><td><strong>Time:</strong></td><td>10:00 AM &ndash; 4:00 PM</td></tr>
                           <tr><td><strong>Venue:</strong></td><td>KMCT College of Engineering, Kasaragod (Auditorium)</td></tr>
                           <tr><td><strong>Department:</strong></td><td>{course}</td></tr>
                           <tr><td><strong>Status:</strong></td><td><span style="color:#4ade80;font-weight:bold;">CONFIRMED &bull; ENTRY GRANTED</span></td></tr>
@@ -131,23 +129,41 @@ def create_email_html(attendee, has_inline_image=False):
                 </td>
               </tr>
 
+              <!-- Digital Pass Link & CTA Button -->
+              <tr>
+                <td align="center" style="padding-bottom:16px;">
+                  <p style="margin:0 0 10px 0;font-size:13px;color:#c084fc;font-weight:600;">
+                    🔗 Your Verified Digital Pass & QR Code:
+                  </p>
+                  <p style="margin:0 0 14px 0;font-size:12px;word-break:break-all;">
+                    <a href="{pass_url}" target="_blank" style="color:#38bdf8;text-decoration:underline;">{pass_url}</a>
+                  </p>
+                  <a href="{pass_url}" target="_blank" style="display:inline-block;background:linear-gradient(135deg, #9333ea, #4f46e5);color:#ffffff;font-size:13px;font-weight:bold;text-decoration:none;padding:12px 24px;border-radius:10px;box-shadow:0 4px 15px rgba(147,51,234,0.4);">
+                    👉 Open &amp; Download Verified Pass 🎟️
+                  </a>
+                </td>
+              </tr>
+
+              <!-- Embedded Pass Image -->
+              {pass_banner_html}
+
               <!-- Event Instructions -->
               <tr>
-                <td style="background:#0a0417;border-radius:12px;padding:16px;border:1px solid #7c3aed20;">
-                  <p style="margin:0 0 8px 0;color:#c084fc;font-size:12px;font-weight:bold;text-transform:uppercase;">Important Instructions for Event Day:</p>
-                  <ul style="margin:0;padding-left:18px;color:#cbd5e1;font-size:12px;line-height:1.7;">
-                    <li>Save the attached pass photo on your phone to present at the gate for fast check-in.</li>
+                <td style="background:#0a0417;border-radius:12px;padding:16px;border:1px solid #7c3aed20;margin-top:6px;">
+                  <p style="margin:0 0 8px 0;color:#c084fc;font-size:12px;font-weight:bold;text-transform:uppercase;">📌 Important Instructions:</p>
+                  <ol style="margin:0;padding-left:20px;color:#cbd5e1;font-size:12px;line-height:1.7;">
+                    <li>Keep this link/QR ready on your phone for rapid scanning at the gate.</li>
                     <li>Collect your official <strong>Illuminate Welcome Kit</strong> at the registration desk.</li>
                     <li>Official Certificates will be awarded by <strong>E-Cell IIT Bombay</strong> upon workshop completion.</li>
-                  </ul>
+                  </ol>
                 </td>
               </tr>
 
               <!-- Footer -->
               <tr>
-                <td align="center" style="padding-top:24px;border-top:1px solid #7c3aed20;margin-top:20px;color:#64748b;font-size:11px;">
-                  <p style="margin:2px 0;">Event Lead & Coordinator: <strong>Alan Albin (8848563266)</strong></p>
-                  <p style="margin:2px 0;">KMCT College of Engineering, Kasaragod &bull; E-Cell IIT Bombay</p>
+                <td align="center" style="padding-top:20px;border-top:1px solid #7c3aed20;margin-top:20px;color:#94a3b8;font-size:12px;">
+                  <p style="margin:2px 0;">Event Coordinator: <strong>Alan Albin (+91 8848563266)</strong></p>
+                  <p style="margin:4px 0 0 0;color:#c084fc;font-weight:600;">See you tomorrow at the workshop! 🚀</p>
                 </td>
               </tr>
 
