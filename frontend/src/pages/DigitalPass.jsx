@@ -26,8 +26,6 @@ export default function DigitalPass() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const [activeSide, setActiveSide] = useState('both'); // 'both' | 'front' | 'back'
-  const [checkinLoading, setCheckinLoading] = useState(false);
   const passCardRef = useRef(null);
 
   const fetchTicket = async (silent = false) => {
@@ -37,12 +35,18 @@ export default function DigitalPass() {
       const data = await api.getTicket(ticketId);
       setTicket(data);
     } catch (err) {
-      if (ticketId.toUpperCase() === 'ILL26A7F3' || ticketId.toLowerCase() === 'sample' || ticketId.toLowerCase() === 'demo') {
+      if (
+        ticketId.toUpperCase() === 'ILL26A7F3' || 
+        ticketId.toLowerCase().includes('sample') || 
+        ticketId.toLowerCase() === 'demo'
+      ) {
         setTicket({
-          ticketId: 'ILL26A7F3',
-          participantName: 'General Attendee',
-          email: 'attendee@illuminate.org',
-          phone: '+91 98765 43210',
+          ticketId: ticketId,
+          participantName: 'Alan Albin (Organizer Sample)',
+          email: 'alanalbin06112005@gmail.com',
+          phone: '+91 8848563266',
+          course: 'Event Coordinator',
+          college: 'KMCT College of Engineering, Kasaragod',
           status: 'ACTIVE',
           checkedIn: false,
         });
@@ -69,18 +73,7 @@ export default function DigitalPass() {
     };
   }, [ticketId]);
 
-  const handleConfirmCheckin = async () => {
-    if (!ticket || ticket.checkedIn) return;
-    setCheckinLoading(true);
-    try {
-      await api.checkinTicket(ticket.ticketId, 'Mobile Pass View');
-      await fetchTicket(true);
-    } catch (err) {
-      console.error('Checkin error:', err);
-    } finally {
-      setCheckinLoading(false);
-    }
-  };
+
 
   const verifyUrl = typeof window !== 'undefined' ? `${window.location.origin}/ticket/${ticketId}` : '';
 
@@ -160,13 +153,8 @@ export default function DigitalPass() {
           <p className="text-xs text-purple-300/70 mt-2">
             Ticket ID <span className="font-mono text-purple-200 font-bold">{ticketId}</span> was not found in the Illuminate system.
           </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Link
-              to="/passes"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-purple-600 text-white"
-            >
-              Browse All Passes
-            </Link>
+          <div className="mt-6 p-4 rounded-xl bg-purple-950/40 border border-purple-500/20 text-xs text-purple-300/80">
+            Please make sure you clicked the exact link sent to your email or WhatsApp. For help, contact Event Coordinator Alan Albin at <strong>+91 8848563266</strong>.
           </div>
         </div>
       </div>
@@ -174,79 +162,34 @@ export default function DigitalPass() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-8 px-3 sm:px-6 flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-[calc(100vh-2rem)] py-6 px-3 sm:px-6 flex flex-col items-center justify-center relative overflow-hidden">
       
       {/* Background radial ambient glow */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none" />
 
-      {/* Header controls bar */}
-      <div className="w-full max-w-[920px] flex flex-col sm:flex-row items-center justify-between gap-3 mb-4 sm:mb-5 z-10">
-        <div className="flex items-center justify-between w-full sm:w-auto gap-3">
-          <Link
-            to="/passes"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-300/80 hover:text-white transition-colors py-1.5 px-2.5 rounded-xl bg-purple-950/60 border border-purple-800/40"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>All Passes</span>
-          </Link>
-
-          {/* View Mode Switcher */}
-          <div className="flex items-center bg-purple-950/80 border border-purple-500/30 p-1 rounded-2xl">
-            <button
-              onClick={() => setActiveSide('both')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
-                activeSide === 'both' 
-                  ? 'bg-purple-600 text-white shadow-sm' 
-                  : 'text-purple-300/80 hover:text-white'
-              }`}
-            >
-              Both
-            </button>
-            <button
-              onClick={() => setActiveSide('front')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
-                activeSide === 'front' 
-                  ? 'bg-purple-600 text-white shadow-sm' 
-                  : 'text-purple-300/80 hover:text-white'
-              }`}
-            >
-              Front
-            </button>
-            <button
-              onClick={() => setActiveSide('back')}
-              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all ${
-                activeSide === 'back' 
-                  ? 'bg-purple-600 text-white shadow-sm' 
-                  : 'text-purple-300/80 hover:text-white'
-              }`}
-            >
-              Back
-            </button>
+      {/* Official Attendee Header Bar */}
+      <div className="w-full max-w-[1020px] flex items-center justify-between pb-3 mb-4 border-b border-purple-500/20 z-10">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 flex items-center justify-center text-white shadow-md shadow-purple-900/40">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <h1 className="text-sm sm:text-base font-black tracking-wider text-white">ILLUMINATE 2026</h1>
+            <p className="text-[10px] text-purple-300/70 font-semibold">Official Entry Pass &bull; E-Cell IIT Bombay & KMCT</p>
           </div>
         </div>
 
-        {/* Status Pill & Instant Check-in Action */}
-        <div className="flex items-center justify-center w-full sm:w-auto gap-2">
+        <div>
           {ticket.checkedIn ? (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>ENTRY VERIFIED {ticket.checkedInAt ? `(${new Date(ticket.checkedInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})` : ''}</span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>ENTRY VERIFIED</span>
             </span>
           ) : (
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-950/80 text-purple-300 border border-purple-500/40">
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                <span>OFFICIAL TICKET</span>
-              </span>
-              <button
-                onClick={handleConfirmCheckin}
-                disabled={checkinLoading}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all active:scale-95 disabled:opacity-50"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>{checkinLoading ? 'VERIFYING...' : 'CONFIRM ENTRY CHECK-IN'}</span>
-              </button>
-            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-950/80 text-purple-200 border border-purple-500/40">
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+              <span>SEAT CONFIRMED</span>
+            </span>
           )}
         </div>
       </div>
@@ -257,10 +200,9 @@ export default function DigitalPass() {
           customRef={passCardRef}
           ticket={ticket}
           verifyUrl={verifyUrl}
-          showSide={activeSide}
-          passType="GENERAL PASS"
-          eventDate="14 - 16 March 2026"
-          venue="IIT Bombay, Mumbai"
+          passType="OFFICIAL PASS"
+          eventDate="22nd October 2026"
+          venue="KMCT College of Engineering, Kasaragod"
         />
       </div>
 
