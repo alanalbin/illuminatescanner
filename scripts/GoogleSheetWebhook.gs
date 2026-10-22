@@ -157,6 +157,12 @@ function doPost(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Student Feedback") || ss.getActiveSheet();
 
+    // Auto-create official 11 headers and styling if sheet is blank
+    if (sheet.getLastRow() === 0) {
+      formatFeedbackSheet();
+      sheet = ss.getSheetByName("Student Feedback") || ss.getActiveSheet();
+    }
+
     var data = {};
     if (e && e.postData && e.postData.contents) {
       try {

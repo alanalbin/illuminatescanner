@@ -20,17 +20,19 @@ export const GOOGLE_SHEET_CONFIG = {
 // Official Google Form Response URL (submits directly to Google Forms backend)
 export const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfqtBNHYgy0JIcQlu6iIGGQVGer3IAgwfhfRXkYFrlqQSF6XQ/formResponse';
 
+export const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw1VDRnuYTyCiexLeNH8uS9XOq21Ncsc2Vh4yvCQRgma_6IDyo9QS-Swx5amBjXJwoO/exec';
+
 class GoogleSheetSync {
   constructor() {
     this.webhookUrl = this.loadWebhookUrl();
   }
 
   loadWebhookUrl() {
-    if (typeof window === 'undefined') return '';
+    if (typeof window === 'undefined') return DEFAULT_WEBHOOK_URL;
     return (
       localStorage.getItem(STORAGE_KEY_WEBHOOK) ||
       (import.meta.env && import.meta.env.VITE_GOOGLE_SHEET_WEBHOOK) ||
-      ''
+      DEFAULT_WEBHOOK_URL
     );
   }
 
@@ -144,7 +146,7 @@ class GoogleSheetSync {
           method: 'POST',
           mode: 'no-cors',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain;charset=utf-8',
           },
           body: JSON.stringify(payload),
         });
