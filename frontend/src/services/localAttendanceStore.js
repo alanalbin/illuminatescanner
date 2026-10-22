@@ -730,10 +730,14 @@ export const localAttendanceStore = {
     if (!data) throw new Error('Feedback data required');
     const feedbacks = loadFeedbacks();
     const cleanTicketId = data.ticketId ? String(data.ticketId).trim().toUpperCase() : '';
+    const cleanPhone = data.phone ? String(data.phone).replace(/\D/g, '') : '';
+    const cleanEmail = data.email ? String(data.email).trim().toLowerCase() : '';
     
-    // Check if feedback already exists for this ticket or explicit id
+    // Check if feedback already exists for this ticket or phone or email or explicit id
     const existingIndex = feedbacks.findIndex(f => 
-      (cleanTicketId && f.ticketId && f.ticketId.trim().toUpperCase() === cleanTicketId) ||
+      (cleanTicketId && cleanTicketId !== 'STUDENT-WALKIN' && f.ticketId && f.ticketId.trim().toUpperCase() === cleanTicketId) ||
+      (cleanPhone && cleanPhone.length >= 7 && f.phone && String(f.phone).replace(/\D/g, '') === cleanPhone) ||
+      (cleanEmail && f.email && String(f.email).trim().toLowerCase() === cleanEmail) ||
       (data.id && f.id === data.id)
     );
 
@@ -741,11 +745,12 @@ export const localAttendanceStore = {
       id: existingIndex !== -1 ? feedbacks[existingIndex].id : `fb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       ticketId: data.ticketId || '',
       participantName: data.participantName || 'Anonymous Student',
-      college: data.college || 'KMCT College of Engineering, Kasaragod',
-      course: data.course || '',
-      yearOfStudy: data.yearOfStudy || '',
-      email: data.email || '',
       phone: data.phone || '',
+      email: data.email || '',
+      batch: data.batch || data.course || '',
+      course: data.course || data.batch || '',
+      college: data.college || 'KMCT College of Engineering, Kasaragod',
+      yearOfStudy: data.yearOfStudy || '',
       trainerName: data.trainerName || 'Mr. Naveen Paul',
       trainerRating: Number(data.trainerRating) || Number(data.mentorRating) || 5,
       trainerReview: data.trainerReview || data.likedMost || '',
@@ -835,10 +840,11 @@ export const localAttendanceStore = {
     const headers = [
       'Submission ID',
       'Ticket ID',
-      'Participant Name',
+      'Student Name',
+      'Mobile Number',
+      'Email Address',
+      'Batch / Department',
       'College',
-      'Course',
-      'Year of Study',
       'Trainer Name',
       'Trainer Rating (Mr. Naveen Paul)',
       'Trainer Review & Description',
@@ -855,9 +861,10 @@ export const localAttendanceStore = {
       escapeCsv(f.id),
       escapeCsv(f.ticketId),
       escapeCsv(f.participantName),
+      escapeCsv(f.phone),
+      escapeCsv(f.email),
+      escapeCsv(f.batch || f.course),
       escapeCsv(f.college),
-      escapeCsv(f.course),
-      escapeCsv(f.yearOfStudy),
       escapeCsv(f.trainerName || 'Mr. Naveen Paul'),
       f.trainerRating || f.mentorRating || 5,
       escapeCsv(f.trainerReview || f.likedMost),
