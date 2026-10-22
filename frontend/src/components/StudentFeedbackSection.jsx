@@ -313,7 +313,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="e.g. Aryananda M"
+                      placeholder="Enter your full name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full bg-[#0c0817] text-white text-sm pl-10 pr-4 py-3 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
@@ -331,7 +331,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                   <div className="relative">
                     <input
                       type="tel"
-                      placeholder="e.g. 9847123456"
+                      placeholder="Enter mobile number"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       onBlur={() => checkExistingUserFeedback(phone, email)}
@@ -350,7 +350,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                   <div className="relative">
                     <input
                       type="email"
-                      placeholder="e.g. student@gmail.com"
+                      placeholder="Enter email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onBlur={() => checkExistingUserFeedback(phone, email)}
@@ -369,7 +369,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="e.g. BTech ECE 2026 / 1st Year"
+                      placeholder="Enter batch or department"
                       value={batch}
                       onChange={(e) => setBatch(e.target.value)}
                       className="w-full bg-[#0c0817] text-white text-sm pl-10 pr-4 py-3 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
@@ -448,7 +448,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                   rows="3"
                   value={trainerReview}
                   onChange={(e) => setTrainerReview(e.target.value)}
-                  placeholder="How was Mr. Naveen Paul's session? (e.g. Teaching style, real startup examples, answering doubts, energy...)"
+                  placeholder="Share your thoughts and feedback on Mr. Naveen Paul's training session..."
                   className="w-full bg-[#07050f] text-zinc-100 text-xs sm:text-sm p-4 rounded-xl border border-white/[0.1] focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 placeholder:text-zinc-600 transition-all resize-none leading-relaxed outline-none font-sans"
                   required
                 />
@@ -519,7 +519,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                   rows="3"
                   value={programReview}
                   onChange={(e) => setProgramReview(e.target.value)}
-                  placeholder="How was the overall workshop program? (e.g. Topics covered, ideation activities, arrangements, what you liked most...)"
+                  placeholder="Share your thoughts and key takeaways from the ILLUMINATE workshop program..."
                   className="w-full bg-[#07050f] text-zinc-100 text-xs sm:text-sm p-4 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 placeholder:text-zinc-600 transition-all resize-none leading-relaxed outline-none font-sans"
                   required
                 />
