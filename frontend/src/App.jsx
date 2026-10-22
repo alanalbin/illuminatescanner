@@ -14,12 +14,17 @@ import StudentFeedback from './pages/StudentFeedback';
 
 function AppContent() {
   const location = useLocation();
-  const isTicketView = location.pathname.startsWith('/ticket/') || location.pathname.startsWith('/verify/');
+  const isStudentOnlyView = 
+    location.pathname.startsWith('/ticket/') || 
+    location.pathname.startsWith('/verify/') || 
+    location.pathname.startsWith('/feedback') || 
+    location.pathname.startsWith('/rate') || 
+    location.pathname.startsWith('/review');
 
   return (
     <div className="min-h-screen bg-dark-950 text-slate-100 selection:bg-purple-600 selection:text-white flex flex-col">
-      {!isTicketView && <Navbar />}
-      <main className={`flex-1 ${isTicketView ? 'pb-8' : 'pb-24 sm:pb-28 lg:pb-10'}`}>
+      {!isStudentOnlyView && <Navbar />}
+      <main className={`flex-1 ${isStudentOnlyView ? 'pb-8' : 'pb-24 sm:pb-28 lg:pb-10'}`}>
         <Routes>
           {/* Event Day default entry: Pass Scanner */}
           <Route path="/" element={<Navigate to="/scanner" replace />} />
@@ -35,8 +40,13 @@ function AppContent() {
           <Route path="/tickets" element={<TicketList />} />
           <Route path="/ticket/:ticketId" element={<DigitalPass />} />
           <Route path="/verify/:ticketId" element={<DigitalPass />} />
+          
+          {/* Dedicated Student Feedback Portal */}
           <Route path="/feedback" element={<StudentFeedback />} />
           <Route path="/feedback/:ticketId" element={<StudentFeedback />} />
+          <Route path="/rate" element={<StudentFeedback />} />
+          <Route path="/review" element={<StudentFeedback />} />
+          
           <Route path="/settings" element={<Settings />} />
 
           {/* Fallback */}

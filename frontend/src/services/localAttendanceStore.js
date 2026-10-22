@@ -12,13 +12,18 @@ const DEFAULT_FEEDBACKS = [
     college: 'KMCT College of Engineering, Kasaragod',
     course: 'Electronics and Communication',
     yearOfStudy: '1st Year',
+    trainerName: 'Mr. Naveen Paul',
+    trainerRating: 5,
+    trainerReview: 'Mr. Naveen Paul delivered an exceptional session! His explanation of startup ideation and pitch decks was practical, engaging, and easy to follow.',
+    programRating: 5,
+    programReview: 'The Illuminate workshop was super inspiring and informative. The hands-on business model framework was the highlight.',
     overallRating: 5,
     contentRating: 5,
     mentorRating: 5,
     organizationRating: 5,
     recommend: 'yes',
-    likedMost: 'The hands-on startup ideation and pitch deck guidance from E-Cell IIT Bombay mentors was truly inspiring! Learned a lot about business models.',
-    suggestions: 'Would love a follow-up 2-day hackathon or bootcamp on funding & incubation next semester.',
+    likedMost: 'Interactive session by Mr. Naveen Paul with real startup examples.',
+    suggestions: 'Would love a follow-up 2-day bootcamp on startup incubation.',
     submittedAt: '2026-10-22T10:45:00.000Z',
   },
   {
@@ -28,13 +33,18 @@ const DEFAULT_FEEDBACKS = [
     college: 'KMCT College of Engineering, Kasaragod',
     course: 'BTech ECE',
     yearOfStudy: '1st Year',
+    trainerName: 'Mr. Naveen Paul',
+    trainerRating: 5,
+    trainerReview: 'Mr. Naveen Paul made entrepreneurship feel achievable. He broke down complex financial and funding terms with great humor and clarity.',
+    programRating: 5,
+    programReview: 'Excellent workshop organization by KMCT and E-Cell IIT Bombay. Every hour was packed with practical learning.',
     overallRating: 5,
     contentRating: 5,
     mentorRating: 5,
     organizationRating: 4,
     recommend: 'yes',
-    likedMost: 'Case studies of real Indian startups and how they overcame initial roadblocks. Mentors explained financial metrics very simply.',
-    suggestions: 'Everything was great! More networking time with IIT Bombay student founders.',
+    likedMost: 'Case studies and real problem-solving exercises.',
+    suggestions: 'More Q&A time with Mr. Naveen Paul.',
     submittedAt: '2026-10-22T11:10:00.000Z',
   },
   {
@@ -44,13 +54,18 @@ const DEFAULT_FEEDBACKS = [
     college: 'KMCT College of Engineering, Kasaragod',
     course: 'BTech Artificial intelligence and data science',
     yearOfStudy: '1st Year',
+    trainerName: 'Mr. Naveen Paul',
+    trainerRating: 5,
+    trainerReview: 'Outstanding training by Mr. Naveen Paul! He answered all student questions patiently and gave practical advice for tech founders.',
+    programRating: 5,
+    programReview: 'The best workshop attended this semester. High energy and great digital pass experience.',
     overallRating: 5,
     contentRating: 5,
     mentorRating: 5,
     organizationRating: 5,
     recommend: 'yes',
-    likedMost: 'The session on AI products and building an MVP in 48 hours was super practical. The QR pass check-in system was also super smooth!',
-    suggestions: 'Please conduct another workshop on deep tech and patenting.',
+    likedMost: 'MVP building methodology and product-market fit framework.',
+    suggestions: 'Conduct hackathons alongside the workshop.',
     submittedAt: '2026-10-22T11:20:00.000Z',
   }
 ];
@@ -731,13 +746,18 @@ export const localAttendanceStore = {
       yearOfStudy: data.yearOfStudy || '',
       email: data.email || '',
       phone: data.phone || '',
-      overallRating: Number(data.overallRating) || 5,
+      trainerName: data.trainerName || 'Mr. Naveen Paul',
+      trainerRating: Number(data.trainerRating) || Number(data.mentorRating) || 5,
+      trainerReview: data.trainerReview || data.likedMost || '',
+      programRating: Number(data.programRating) || Number(data.overallRating) || 5,
+      programReview: data.programReview || data.suggestions || '',
+      overallRating: Number(data.overallRating) || Number(data.programRating) || 5,
       contentRating: Number(data.contentRating) || 5,
-      mentorRating: Number(data.mentorRating) || 5,
+      mentorRating: Number(data.trainerRating) || Number(data.mentorRating) || 5,
       organizationRating: Number(data.organizationRating) || 5,
       recommend: data.recommend || 'yes',
-      likedMost: data.likedMost || '',
-      suggestions: data.suggestions || '',
+      likedMost: data.likedMost || data.trainerReview || '',
+      suggestions: data.suggestions || data.programReview || '',
       submittedAt: new Date().toISOString(),
     };
 
@@ -766,6 +786,8 @@ export const localAttendanceStore = {
       return {
         total: 0,
         avgRating: 0,
+        avgTrainer: 0,
+        avgProgram: 0,
         avgContent: 0,
         avgMentor: 0,
         avgOrg: 0,
@@ -775,6 +797,8 @@ export const localAttendanceStore = {
     }
 
     let sumOverall = 0;
+    let sumTrainer = 0;
+    let sumProgram = 0;
     let sumContent = 0;
     let sumMentor = 0;
     let sumOrg = 0;
@@ -782,10 +806,12 @@ export const localAttendanceStore = {
     const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
 
     feedbacks.forEach(f => {
-      const overall = Math.min(5, Math.max(1, Math.round(Number(f.overallRating) || 5)));
-      sumOverall += Number(f.overallRating) || 5;
+      const overall = Math.min(5, Math.max(1, Math.round(Number(f.overallRating || f.programRating) || 5)));
+      sumOverall += Number(f.overallRating || f.programRating) || 5;
+      sumTrainer += Number(f.trainerRating || f.mentorRating) || 5;
+      sumProgram += Number(f.programRating || f.overallRating) || 5;
       sumContent += Number(f.contentRating) || 5;
-      sumMentor += Number(f.mentorRating) || 5;
+      sumMentor += Number(f.mentorRating || f.trainerRating) || 5;
       sumOrg += Number(f.organizationRating) || 5;
       distribution[overall] = (distribution[overall] || 0) + 1;
       if (f.recommend === 'yes') recommendYesCount++;
@@ -794,6 +820,8 @@ export const localAttendanceStore = {
     return {
       total,
       avgRating: Math.round((sumOverall / total) * 10) / 10,
+      avgTrainer: Math.round((sumTrainer / total) * 10) / 10,
+      avgProgram: Math.round((sumProgram / total) * 10) / 10,
       avgContent: Math.round((sumContent / total) * 10) / 10,
       avgMentor: Math.round((sumMentor / total) * 10) / 10,
       avgOrg: Math.round((sumOrg / total) * 10) / 10,
@@ -811,13 +839,13 @@ export const localAttendanceStore = {
       'College',
       'Course',
       'Year of Study',
-      'Overall Rating (out of 5)',
-      'Workshop Content Rating',
-      'IIT Bombay Mentors Rating',
-      'Venue & Org Rating',
+      'Trainer Name',
+      'Trainer Rating (Mr. Naveen Paul)',
+      'Trainer Review & Description',
+      'Workshop Program Rating (ILLUMINATE 2026)',
+      'Workshop Program Review & Description',
+      'Overall Rating',
       'Would Recommend',
-      'Liked Most',
-      'Suggestions',
       'Submitted At'
     ];
 
@@ -830,13 +858,13 @@ export const localAttendanceStore = {
       escapeCsv(f.college),
       escapeCsv(f.course),
       escapeCsv(f.yearOfStudy),
+      escapeCsv(f.trainerName || 'Mr. Naveen Paul'),
+      f.trainerRating || f.mentorRating || 5,
+      escapeCsv(f.trainerReview || f.likedMost),
+      f.programRating || f.overallRating || 5,
+      escapeCsv(f.programReview || f.suggestions),
       f.overallRating || 5,
-      f.contentRating || 5,
-      f.mentorRating || 5,
-      f.organizationRating || 5,
       escapeCsv(f.recommend === 'yes' ? 'Yes' : f.recommend === 'maybe' ? 'Maybe' : 'No'),
-      escapeCsv(f.likedMost),
-      escapeCsv(f.suggestions),
       escapeCsv(f.submittedAt)
     ]);
 

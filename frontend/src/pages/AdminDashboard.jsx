@@ -1271,15 +1271,15 @@ export default function AdminDashboard() {
                 <span className="text-xs font-bold text-purple-300 uppercase tracking-wider block">Pillar Scores</span>
                 <div className="space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300/80">Content:</span>
-                    <span className="font-bold text-white font-mono">{feedbackStats.avgContent || 5.0} ★</span>
+                    <span className="text-amber-300/90 font-medium">Mr. Naveen Paul:</span>
+                    <span className="font-bold text-amber-300 font-mono">{feedbackStats.avgTrainer || feedbackStats.avgMentor || 5.0} ★</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300/80">IITB Mentors:</span>
-                    <span className="font-bold text-white font-mono">{feedbackStats.avgMentor || 5.0} ★</span>
+                    <span className="text-purple-300/90 font-medium">Workshop Program:</span>
+                    <span className="font-bold text-purple-300 font-mono">{feedbackStats.avgProgram || feedbackStats.avgContent || 5.0} ★</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300/80">Organization:</span>
+                    <span className="text-slate-300/90">Event Organization:</span>
                     <span className="font-bold text-white font-mono">{feedbackStats.avgOrg || 5.0} ★</span>
                   </div>
                 </div>
@@ -1341,7 +1341,7 @@ export default function AdminDashboard() {
                   title="Copy student feedback form link for sharing on WhatsApp or projection"
                 >
                   {copiedFeedbackUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-purple-400" />}
-                  <span>{copiedFeedbackUrl ? 'LINK COPIED!' : 'COPY FORM LINK'}</span>
+                  <span>{copiedFeedbackUrl ? 'LINK COPIED!' : 'COPY STUDENT LINK'}</span>
                 </button>
 
                 <button
@@ -1354,10 +1354,11 @@ export default function AdminDashboard() {
 
                 <Link
                   to="/feedback"
+                  target="_blank"
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>OPEN FORM</span>
+                  <span>PREVIEW STUDENT FORM</span>
                 </Link>
               </div>
 
@@ -1367,7 +1368,9 @@ export default function AdminDashboard() {
             {filteredFeedbacks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredFeedbacks.map((fb) => {
-                  const rating = Number(fb.overallRating) || 5;
+                  const rating = Number(fb.overallRating || fb.programRating) || 5;
+                  const tRating = Number(fb.trainerRating || fb.mentorRating) || 5;
+                  const pRating = Number(fb.programRating || fb.overallRating) || 5;
                   const initials = fb.participantName 
                     ? fb.participantName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
                     : 'ST';
@@ -1420,39 +1423,42 @@ export default function AdminDashboard() {
                           </div>
                         </div>
 
-                        {/* Pillar Scores Pill Tags */}
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-medium">
-                          <span className="px-2 py-0.5 rounded-lg bg-purple-950/60 text-purple-300 border border-purple-800/40">
-                            Content: <strong>{fb.contentRating || 5}★</strong>
-                          </span>
-                          <span className="px-2 py-0.5 rounded-lg bg-fuchsia-950/60 text-fuchsia-300 border border-fuchsia-800/40">
-                            Mentors: <strong>{fb.mentorRating || 5}★</strong>
-                          </span>
-                          <span className="px-2 py-0.5 rounded-lg bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
-                            Org: <strong>{fb.organizationRating || 5}★</strong>
-                          </span>
+                        {/* Trainer Mr. Naveen Paul Section */}
+                        <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-amber-300 flex items-center gap-1">
+                              <Award className="w-3.5 h-3.5 text-amber-400" />
+                              Trainer: Mr. Naveen Paul
+                            </span>
+                            <span className="font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/30">
+                              {tRating}.0 ★
+                            </span>
+                          </div>
+                          {(fb.trainerReview || fb.likedMost) && (
+                            <p className="text-xs text-amber-100/90 italic">
+                              "{fb.trainerReview || fb.likedMost}"
+                            </p>
+                          )}
                         </div>
 
-                        {/* Qualitative Comments */}
-                        {fb.likedMost && (
-                          <div className="p-3 rounded-xl bg-purple-950/20 border border-purple-500/20 text-xs text-purple-200">
-                            <span className="text-[10px] font-bold uppercase text-purple-400 block mb-1 flex items-center gap-1">
-                              <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
-                              Liked Most:
+                        {/* Workshop Program Section */}
+                        <div className="p-3 rounded-xl bg-purple-950/30 border border-purple-500/30 space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-purple-200 flex items-center gap-1">
+                              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                              Workshop Program: ILLUMINATE
                             </span>
-                            <p className="italic">"{fb.likedMost}"</p>
+                            <span className="font-mono font-bold text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-md border border-purple-500/30">
+                              {pRating}.0 ★
+                            </span>
                           </div>
-                        )}
+                          {(fb.programReview || fb.suggestions) && (
+                            <p className="text-xs text-purple-200/90 italic">
+                              "{fb.programReview || fb.suggestions}"
+                            </p>
+                          )}
+                        </div>
 
-                        {fb.suggestions && (
-                          <div className="p-3 rounded-xl bg-dark-950/50 border border-purple-500/20 text-xs text-purple-300/90">
-                            <span className="text-[10px] font-bold uppercase text-purple-400 block mb-1 flex items-center gap-1">
-                              <Sparkles className="w-3 h-3 text-amber-400" />
-                              Suggestions:
-                            </span>
-                            <p className="italic">"{fb.suggestions}"</p>
-                          </div>
-                        )}
                       </div>
 
                       {/* Card Footer */}

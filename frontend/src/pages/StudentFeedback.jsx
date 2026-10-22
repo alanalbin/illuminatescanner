@@ -2,17 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   Sparkles, 
-  MessageSquareHeart, 
-  ArrowLeft, 
-  ScanLine, 
-  QrCode, 
-  ShieldCheck, 
   MapPin, 
-  Award,
-  Star
+  User,
+  BookOpen
 } from 'lucide-react';
 import { api } from '../services/api';
-import { localAttendanceStore } from '../services/localAttendanceStore';
 import StudentFeedbackSection from '../components/StudentFeedbackSection';
 
 export default function StudentFeedback() {
@@ -39,77 +33,73 @@ export default function StudentFeedback() {
   }, [ticketId]);
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] py-6 px-3 sm:px-6 lg:px-8 relative overflow-hidden flex flex-col items-center">
-      {/* Radial glow background */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[160px] pointer-events-none" />
+    <div className="min-h-screen bg-dark-950 text-slate-100 py-6 px-3 sm:px-6 lg:px-8 relative overflow-hidden flex flex-col items-center selection:bg-purple-600 selection:text-white">
+      
+      {/* Background Ambient Glows */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-purple-600/15 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-amber-600/10 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Top Banner Navigation & Brand Bar */}
-      <div className="w-full max-w-[920px] flex items-center justify-between pb-4 mb-4 border-b border-purple-900/40 z-10">
-        <Link 
-          to={ticketId ? `/ticket/${ticketId}` : "/scanner"} 
-          className="inline-flex items-center gap-2 text-xs font-bold text-purple-300 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>{ticketId ? 'Back to Pass' : 'Back to Scanner'}</span>
-        </Link>
-
-        <div className="flex items-center gap-2 text-[11px] text-purple-300/80 font-medium">
-          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-950/70 border border-purple-700/40">
-            <MapPin className="w-3 h-3 text-purple-400" />
-            <span>KMCT Kasaragod &bull; 22 Oct 2026</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Co-Branded Institutional Strip */}
-      <div className="w-full max-w-[920px] mb-4 p-3 rounded-2xl glass-card flex flex-col sm:flex-row items-center justify-between gap-3 z-10 shadow-lg shadow-purple-950/20">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-amber-500 flex items-center justify-center text-white shadow-md">
-            <Sparkles className="w-4 h-4" />
+      {/* Official Header Strip */}
+      <header className="w-full max-w-[920px] mb-4 p-3.5 sm:p-4 rounded-3xl glass-card flex flex-col sm:flex-row items-center justify-between gap-3 z-10 shadow-xl shadow-purple-950/30 border border-purple-500/20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-fuchsia-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-purple-900/40">
+            <Sparkles className="w-5 h-5 text-amber-300" />
           </div>
           <div>
-            <h1 className="text-sm sm:text-base font-black text-white tracking-wide">
-              ILLUMINATE 2026 &bull; Student Experience Survey
-            </h1>
-            <p className="text-[10px] sm:text-xs text-purple-300/70">
-              Joint initiative by The Entrepreneurship Cell, IIT Bombay & KMCT College of Engineering
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-black text-white tracking-wide">
+                ILLUMINATE 2026
+              </h1>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-200 border border-purple-500/30 uppercase tracking-widest">
+                Student Review
+              </span>
+            </div>
+            <p className="text-[11px] text-purple-300/80">
+              Trainer: <strong className="text-amber-300">Mr. Naveen Paul</strong> &bull; E-Cell IIT Bombay & KMCT
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
-          <img src="/logos/ecell-iitb.png" alt="E-Cell IIT Bombay" className="h-5 sm:h-6 w-auto object-contain filter drop-shadow brightness-110" />
+        {/* Co-Branded Institutional Partner Logos */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 py-1 px-3 rounded-2xl bg-white/[0.03] border border-purple-500/20">
+          <img 
+            src="/logos/ecell-iitb.png" 
+            alt="E-Cell IIT Bombay" 
+            className="h-5 sm:h-6 w-auto object-contain filter drop-shadow brightness-110" 
+            title="The Entrepreneurship Cell, IIT Bombay"
+          />
           <div className="w-px h-3.5 bg-purple-500/30" />
-          <img src="/logos/kmct-college.png" alt="KMCT College" className="h-4 sm:h-5 w-auto object-contain filter drop-shadow" />
+          <img 
+            src="/logos/kmct-college.png" 
+            alt="KMCT College" 
+            className="h-4 sm:h-5 w-auto object-contain filter drop-shadow" 
+            title="KMCT College of Engineering"
+          />
           <div className="w-px h-3.5 bg-purple-500/30" />
-          <img src="/logos/nxtbyte-ecell.png" alt="NxT Byte E-Cell" className="h-4 sm:h-5 w-auto object-contain filter drop-shadow" />
+          <img 
+            src="/logos/nxtbyte-ecell.png" 
+            alt="NxT Byte E-Cell" 
+            className="h-4.5 sm:h-5.5 w-auto object-contain filter drop-shadow" 
+            title="NxT Byte E-Cell KMCT"
+          />
         </div>
-      </div>
+      </header>
 
-      {/* Render the Feedback Form */}
-      <div className="w-full max-w-[920px] z-10">
+      {/* Main Feedback Card Component */}
+      <main className="w-full max-w-[920px] z-10 flex-1">
         <StudentFeedbackSection ticket={ticket} standalone={true} />
-      </div>
+      </main>
 
-      {/* Bottom Helpful Navigation */}
-      <div className="w-full max-w-[920px] mt-6 pt-4 border-t border-purple-900/30 flex flex-wrap items-center justify-between gap-3 text-xs text-purple-300/60 z-10">
+      {/* Clean Distraction-Free Student Footer */}
+      <footer className="w-full max-w-[920px] mt-8 pt-4 pb-2 border-t border-purple-900/30 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-purple-300/60 z-10">
+        <div className="flex items-center gap-1.5">
+          <MapPin className="w-3.5 h-3.5 text-purple-400" />
+          <span>KMCT College of Engineering, Kasaragod &bull; 22nd October 2026</span>
+        </div>
         <div>
-          <span>Need assistance? Contact Coordinator Alan Albin (+91 8848563266)</span>
+          <span>Organized by E-Cell IIT Bombay &bull; Coordinator: Alan Albin (+91 8848563266)</span>
         </div>
-        <div className="flex items-center gap-4">
-          <Link to="/attendance" className="hover:text-purple-200 transition-colors">
-            Live Attendance
-          </Link>
-          <span>&bull;</span>
-          <Link to="/passes" className="hover:text-purple-200 transition-colors">
-            QR Passes Gallery
-          </Link>
-          <span>&bull;</span>
-          <Link to="/scanner" className="hover:text-purple-200 transition-colors">
-            Gate Scanner
-          </Link>
-        </div>
-      </div>
+      </footer>
 
     </div>
   );
