@@ -642,32 +642,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
               </div>
             </div>
 
-            {/* Recommendation Prompt */}
-            <div className="p-4 sm:p-5 rounded-xl bg-white/[0.02] border border-white/[0.08] space-y-3">
-              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
-                Would you recommend this workshop &amp; mentor to peers?
-              </label>
-              <div className="grid grid-cols-3 gap-2.5">
-                {[
-                  { value: 'yes', label: 'Definitely! 🚀', activeClass: 'bg-emerald-600 text-white shadow-md' },
-                  { value: 'maybe', label: 'Maybe 👍', activeClass: 'bg-amber-600 text-white shadow-md' },
-                  { value: 'no', label: 'Not Really 👎', activeClass: 'bg-rose-700 text-white shadow-md' },
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setRecommend(option.value)}
-                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                      recommend === option.value
-                        ? option.activeClass
-                        : 'bg-white/[0.03] text-zinc-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.08]'
-                    }`}
-                  >
-                    <span>{option.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+
 
             {/* Submit & Cancel Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
