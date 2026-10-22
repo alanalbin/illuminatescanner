@@ -257,11 +257,36 @@ export default function AdminDashboard() {
     }
   };
 
+  const [syncingGoogleSheet, setSyncingGoogleSheet] = useState(false);
+
   const handleCopyFeedbackUrl = () => {
     const url = `${window.location.origin}/feedback`;
     navigator.clipboard?.writeText(url);
     setCopiedFeedbackUrl(true);
     setTimeout(() => setCopiedFeedbackUrl(false), 2000);
+  };
+
+  const handleSyncToGoogleSheet = async () => {
+    let webhook = api.getGoogleSheetWebhook();
+    if (!webhook) {
+      const promptVal = window.prompt(
+        'Paste your Google Apps Script Web App URL to enable real-time sync into your Google Sheet:\n\n(See instructions in scripts/GoogleSheetWebhook.gs)',
+        ''
+      );
+      if (!promptVal || !promptVal.trim()) return;
+      api.setGoogleSheetWebhook(promptVal.trim());
+      webhook = promptVal.trim();
+    }
+
+    try {
+      setSyncingGoogleSheet(true);
+      const res = await api.syncAllFeedbacksToGoogleSheet();
+      alert(`✅ Successfully synced ${res.synced} feedback response(s) to the Google Sheet!`);
+    } catch (err) {
+      alert('Could not sync to Google Sheet: ' + err.message);
+    } finally {
+      setSyncingGoogleSheet(false);
+    }
   };
 
   return (
@@ -1349,8 +1374,29 @@ export default function AdminDashboard() {
                   className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-glow-purple transition-all active:scale-95"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>EXPORT FEEDBACK CSV</span>
+                  <span>EXPORT CSV</span>
                 </button>
+
+                <button
+                  onClick={handleSyncToGoogleSheet}
+                  disabled={syncingGoogleSheet}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-md transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                  title="Push all saved student feedback to the linked Google Sheet"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${syncingGoogleSheet ? 'animate-spin' : ''}`} />
+                  <span>{syncingGoogleSheet ? 'SYNCING...' : 'SYNC GOOGLE SHEET'}</span>
+                </button>
+
+                <a
+                  href="https://docs.google.com/spreadsheets/d/19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU/edit?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-dark-900 hover:bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 transition-colors"
+                  title="Open live Google Sheet"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>OPEN SHEET</span>
+                </a>
 
                 <Link
                   to="/feedback"
@@ -1358,7 +1404,7 @@ export default function AdminDashboard() {
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
-                  <span>PREVIEW STUDENT FORM</span>
+                  <span>STUDENT FORM</span>
                 </Link>
               </div>
 

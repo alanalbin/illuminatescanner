@@ -1,5 +1,6 @@
 import { localAttendanceStore } from './localAttendanceStore';
 import { cloudSync } from './cloudSync';
+import { googleSheetSync } from './googleSheetSync';
 
 const API_BASE = '/api';
 
@@ -328,6 +329,12 @@ export const api = {
 
   submitFeedback: async (feedbackData) => {
     const saved = localAttendanceStore.submitFeedback(feedbackData);
+
+    // Instant real-time dispatch to linked Google Sheet (Spreadsheet ID: 19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU)
+    googleSheetSync.sendFeedbackToGoogleSheet(saved).catch((err) => {
+      console.warn('Google Sheet real-time dispatch error:', err);
+    });
+
     // Non-blocking background sync if backend available
     request('/feedback', {
       method: 'POST',
@@ -335,6 +342,13 @@ export const api = {
     }).catch(() => {});
     return saved;
   },
+
+  syncAllFeedbacksToGoogleSheet: async () => {
+    return googleSheetSync.syncAllFeedbacks(localAttendanceStore.getFeedbacks());
+  },
+
+  getGoogleSheetWebhook: () => googleSheetSync.getWebhookUrl(),
+  setGoogleSheetWebhook: (url) => googleSheetSync.setWebhookUrl(url),
 
   deleteFeedback: async (id) => {
     const updated = localAttendanceStore.deleteFeedback(id);
