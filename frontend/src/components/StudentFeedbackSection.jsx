@@ -5,18 +5,16 @@ import {
   Sparkles, 
   CheckCircle2, 
   Send, 
-  ThumbsUp, 
-  MessageSquareHeart, 
   Edit3, 
   GraduationCap, 
   Award, 
-  Heart, 
-  Building,
-  User,
-  Phone,
-  Mail,
-  BookOpen,
-  Briefcase
+  User, 
+  Phone, 
+  Mail, 
+  BookOpen, 
+  Users2,
+  Building2,
+  Check
 } from 'lucide-react';
 import { api } from '../services/api';
 import { localAttendanceStore } from '../services/localAttendanceStore';
@@ -30,17 +28,22 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
   const [batch, setBatch] = useState(ticket?.course || ticket?.yearOfStudy || '');
   const [college, setCollege] = useState(ticket?.college || 'KMCT College of Engineering, Kasaragod');
 
-  // Trainer: Mr. Naveen Paul Evaluation
+  // 1. Trainer: Mr. Naveen Paul Evaluation
   const [trainerRating, setTrainerRating] = useState(5);
   const [hoveredTrainerRating, setHoveredTrainerRating] = useState(0);
   const [trainerReview, setTrainerReview] = useState('');
 
-  // Workshop & Program Evaluation
+  // 2. Organisation Team Evaluation
+  const [orgTeamRating, setOrgTeamRating] = useState(5);
+  const [hoveredOrgTeamRating, setHoveredOrgTeamRating] = useState(0);
+  const [orgTeamReview, setOrgTeamReview] = useState('');
+
+  // 3. Workshop Program Evaluation
   const [programRating, setProgramRating] = useState(5);
   const [hoveredProgramRating, setHoveredProgramRating] = useState(0);
   const [programReview, setProgramReview] = useState('');
 
-  // Recommendation
+  // 4. Recommendation
   const [recommend, setRecommend] = useState('yes');
 
   const [existingFeedback, setExistingFeedback] = useState(null);
@@ -61,6 +64,8 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
         setExistingFeedback(fb);
         setTrainerRating(Number(fb.trainerRating || fb.mentorRating) || 5);
         setTrainerReview(fb.trainerReview || fb.likedMost || '');
+        setOrgTeamRating(Number(fb.orgTeamRating || fb.organizationRating) || 5);
+        setOrgTeamReview(fb.orgTeamReview || '');
         setProgramRating(Number(fb.programRating || fb.overallRating) || 5);
         setProgramReview(fb.programReview || fb.suggestions || '');
         setRecommend(fb.recommend || 'yes');
@@ -88,6 +93,8 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
       setExistingFeedback(found);
       setTrainerRating(Number(found.trainerRating || found.mentorRating) || 5);
       setTrainerReview(found.trainerReview || found.likedMost || '');
+      setOrgTeamRating(Number(found.orgTeamRating || found.organizationRating) || 5);
+      setOrgTeamReview(found.orgTeamReview || '');
       setProgramRating(Number(found.programRating || found.overallRating) || 5);
       setProgramReview(found.programReview || found.suggestions || '');
       setRecommend(found.recommend || 'yes');
@@ -99,22 +106,33 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
 
   const getTrainerSentiment = (val) => {
     switch (val) {
-      case 5: return 'Exceptional! 🌟 Highly Engaging, Clear & Inspiring';
-      case 4: return 'Very Good! 🚀 Great Practical Case Studies';
-      case 3: return 'Good 👍 Clear Presentation';
-      case 2: return 'Average 😐 Could be More Interactive';
-      case 1: return 'Needs Improvement ⚠️';
+      case 5: return 'Exceptional — Highly Engaging, Clear & Inspiring';
+      case 4: return 'Very Good — Practical Case Studies & Practical Guidance';
+      case 3: return 'Good — Clear Presentation & Concepts';
+      case 2: return 'Fair — Could Be More Interactive';
+      case 1: return 'Needs Improvement';
+      default: return 'Select Rating';
+    }
+  };
+
+  const getOrgTeamSentiment = (val) => {
+    switch (val) {
+      case 5: return 'Outstanding — Seamless Coordination & Dedicated Support';
+      case 4: return 'Very Good — Helpful Team & Smooth Arrangements';
+      case 3: return 'Good — Proper Coordination Throughout Event';
+      case 2: return 'Average — Coordination Could Be More Prompt';
+      case 1: return 'Needs Better Management';
       default: return 'Select Rating';
     }
   };
 
   const getProgramSentiment = (val) => {
     switch (val) {
-      case 5: return 'Outstanding Workshop! 🎯 High Value Curriculum';
-      case 4: return 'Very Good Program! 💡 Learned Essential Frameworks';
-      case 3: return 'Good Workshop 👍 Worthwhile Offline Learning';
-      case 2: return 'Fair 😐 Expected More Venture Exercises';
-      case 1: return 'Needs Revision ⚠️';
+      case 5: return 'Outstanding Program — High Value Venture Curriculum';
+      case 4: return 'Very Good Workshop — Learned Essential Frameworks';
+      case 3: return 'Good Workshop — Worthwhile Offline Learning Experience';
+      case 2: return 'Fair — Expected More Practical Exercises';
+      case 1: return 'Needs Revision';
       default: return 'Select Rating';
     }
   };
@@ -125,7 +143,7 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
         particleCount: 90,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#a855f7', '#ec4899', '#f59e0b', '#10b981', '#6366f1']
+        colors: ['#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1']
       });
     } catch (e) {
       console.warn('Confetti error:', e);
@@ -162,9 +180,12 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
         trainerName: 'Mr. Naveen Paul',
         trainerRating,
         trainerReview: trainerReview.trim(),
+        orgTeamRating,
+        orgTeamReview: orgTeamReview.trim(),
+        organizationRating: orgTeamRating,
         programRating,
         programReview: programReview.trim(),
-        overallRating: Math.round(((trainerRating + programRating) / 2) * 10) / 10,
+        overallRating: Math.round(((trainerRating + orgTeamRating + programRating) / 3) * 10) / 10,
         recommend,
         likedMost: trainerReview.trim(),
         suggestions: programReview.trim(),
@@ -188,101 +209,125 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
   };
 
   return (
-    <div className={`w-full max-w-[920px] mx-auto ${standalone ? 'my-3' : 'mt-8'} transition-all duration-300 font-heading`}>
-      {/* Main Glassmorphic Card Container matching illuminate-wheat.vercel.app */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[#130926]/95 via-[#0a0418]/95 to-[#04010a]/95 border border-purple-500/40 p-6 sm:p-10 shadow-2xl shadow-purple-950/80 backdrop-blur-2xl">
+    <div className={`w-full max-w-[880px] mx-auto ${standalone ? 'my-3' : 'mt-8'} font-sans`}>
+      {/* Clean, Neat, Professional Glass Container */}
+      <div className="relative overflow-hidden rounded-2xl bg-[#0b0816]/95 border border-white/[0.12] p-5 sm:p-9 shadow-2xl backdrop-blur-xl">
         
-        {/* Ambient Top Glow */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
+        {/* Subtle Ambient Glow */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
 
         {/* Section Header */}
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/[0.08]">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-purple-950/60 shrink-0 border border-purple-400/30">
-              <MessageSquareHeart className="w-6 h-6" />
-            </div>
+        <div className="relative z-10 pb-6 border-b border-white/[0.08]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white uppercase font-heading">
-                  Student Workshop Review
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  Student Workshop Feedback
                 </h2>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-md bg-purple-950/60 text-purple-300 border border-purple-500/30">
-                  <Sparkles className="w-3 h-3 text-purple-400" />
+                <span className="text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
                   Official Form
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-                Please provide your feedback for trainer <strong className="text-amber-300 font-semibold">Mr. Naveen Paul</strong> and the <strong className="text-white">ILLUMINATE 2026</strong> workshop program
+                ILLUMINATE 2026 &bull; KMCT Kasaragod &amp; E-Cell IIT Bombay
               </p>
+            </div>
+
+            <div className="text-left sm:text-right">
+              <span className="text-[11px] font-mono text-zinc-400">
+                Resource Person: <strong className="text-amber-300">Mr. Naveen Paul</strong>
+              </span>
             </div>
           </div>
         </div>
 
-        {/* If feedback already submitted and not editing: show glowing summary card */}
+        {/* If feedback already submitted and not editing: show clean confirmation card */}
         {existingFeedback && !isEditing && (
           <div className="relative z-10 py-8 text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-emerald-950/80 border-2 border-emerald-500/60 flex items-center justify-center text-emerald-400 mx-auto shadow-[0_0_30px_rgba(16,185,129,0.35)] animate-bounce-gentle">
-              <CheckCircle2 className="w-8 h-8" />
+            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400 mx-auto shadow-lg shadow-emerald-950/40">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
 
             <div>
-              <h3 className="text-2xl font-black text-white uppercase tracking-tight">
-                Review Submitted Successfully!
+              <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                Feedback Recorded Successfully
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 max-w-lg mx-auto mt-2 leading-relaxed">
-                Thank you, <span className="text-white font-bold">{existingFeedback.participantName}</span> ({existingFeedback.batch || 'Participant'})! Your rating for trainer <strong className="text-amber-300">Mr. Naveen Paul</strong> and the <strong className="text-purple-300">ILLUMINATE 2026</strong> workshop has been saved.
+                Thank you, <strong className="text-white">{existingFeedback.participantName}</strong> ({existingFeedback.batch || 'Participant'})! Your evaluations have been securely recorded and synced.
               </p>
             </div>
 
-            {/* Submitted Overview Pill Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto pt-2 text-left">
-              {/* Trainer Review Card */}
-              <div className="p-5 rounded-2xl bg-[#0e091d] border border-amber-500/30 space-y-2.5">
+            {/* Submitted Summary Cards (Trainer, Org Team, Workshop) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 max-w-3xl mx-auto pt-2 text-left">
+              {/* Trainer Card */}
+              <div className="p-4 rounded-xl bg-black/40 border border-amber-500/25 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase text-amber-300 flex items-center gap-1.5 font-mono">
-                    <User className="w-4 h-4 text-amber-400" />
-                    Trainer: Mr. Naveen Paul
+                  <span className="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Trainer</span>
                   </span>
-                  <div className="flex items-center gap-1 text-amber-400 font-black text-sm bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/30 font-mono">
-                    <Star className="w-3.5 h-3.5 fill-amber-400" />
-                    <span>{existingFeedback.trainerRating || existingFeedback.mentorRating || 5}.0 / 5</span>
+                  <div className="flex items-center gap-1 text-amber-400 font-bold text-xs bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                    <Star className="w-3 h-3 fill-amber-400" />
+                    <span>{existingFeedback.trainerRating || 5}.0</span>
                   </div>
                 </div>
+                <p className="text-[11px] font-medium text-white truncate">Mr. Naveen Paul</p>
                 {existingFeedback.trainerReview && (
-                  <p className="text-xs text-zinc-300 italic bg-black/40 p-3 rounded-xl border border-white/[0.06] leading-relaxed">
+                  <p className="text-xs text-zinc-300 italic bg-white/[0.03] p-2.5 rounded-lg border border-white/[0.05] line-clamp-3">
                     "{existingFeedback.trainerReview}"
                   </p>
                 )}
               </div>
 
-              {/* Program Review Card */}
-              <div className="p-5 rounded-2xl bg-[#0e091d] border border-purple-500/30 space-y-2.5">
+              {/* Org Team Card */}
+              <div className="p-4 rounded-xl bg-black/40 border border-emerald-500/25 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase text-purple-300 flex items-center gap-1.5 font-mono">
-                    <BookOpen className="w-4 h-4 text-purple-400" />
-                    Workshop: ILLUMINATE 2026
+                  <span className="text-xs font-semibold text-emerald-300 flex items-center gap-1.5">
+                    <Users2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Organising Team</span>
                   </span>
-                  <div className="flex items-center gap-1 text-purple-300 font-black text-sm bg-purple-500/10 px-2.5 py-0.5 rounded-md border border-purple-500/30 font-mono">
-                    <Star className="w-3.5 h-3.5 fill-purple-400 text-purple-400" />
-                    <span>{existingFeedback.programRating || existingFeedback.overallRating || 5}.0 / 5</span>
+                  <div className="flex items-center gap-1 text-emerald-400 font-bold text-xs bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                    <Star className="w-3 h-3 fill-emerald-400" />
+                    <span>{existingFeedback.orgTeamRating || existingFeedback.organizationRating || 5}.0</span>
                   </div>
                 </div>
+                <p className="text-[11px] font-medium text-white truncate">Coordination &amp; Support</p>
+                {existingFeedback.orgTeamReview && (
+                  <p className="text-xs text-zinc-300 italic bg-white/[0.03] p-2.5 rounded-lg border border-white/[0.05] line-clamp-3">
+                    "{existingFeedback.orgTeamReview}"
+                  </p>
+                )}
+              </div>
+
+              {/* Workshop Program Card */}
+              <div className="p-4 rounded-xl bg-black/40 border border-purple-500/25 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-purple-300 flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Workshop</span>
+                  </span>
+                  <div className="flex items-center gap-1 text-purple-300 font-bold text-xs bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/30">
+                    <Star className="w-3 h-3 fill-purple-400" />
+                    <span>{existingFeedback.programRating || existingFeedback.overallRating || 5}.0</span>
+                  </div>
+                </div>
+                <p className="text-[11px] font-medium text-white truncate">ILLUMINATE 2026</p>
                 {existingFeedback.programReview && (
-                  <p className="text-xs text-zinc-300 italic bg-black/40 p-3 rounded-xl border border-white/[0.06] leading-relaxed">
+                  <p className="text-xs text-zinc-300 italic bg-white/[0.03] p-2.5 rounded-lg border border-white/[0.05] line-clamp-3">
                     "{existingFeedback.programReview}"
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-3">
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs sm:text-sm font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-zinc-200 hover:text-white border border-white/10 transition-all active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold bg-white/[0.05] hover:bg-white/[0.1] text-zinc-200 hover:text-white border border-white/10 transition-all cursor-pointer"
               >
-                <Edit3 className="w-4 h-4 text-purple-400" />
-                <span>Edit / Update Response</span>
+                <Edit3 className="w-3.5 h-3.5 text-purple-400" />
+                <span>Edit Response</span>
               </button>
             </div>
           </div>
@@ -293,21 +338,21 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
           <form onSubmit={handleSubmit} className="relative z-10 pt-6 space-y-6">
 
             {/* ======================================================== */}
-            {/* PART 1: STUDENT INFORMATION (NO DROPDOWN - DIRECT INPUTS) */}
+            {/* PART 1: STUDENT DETAILS (CLEAN DIRECT INPUTS, NO EXAMPLES) */}
             {/* ======================================================== */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-[#07050f] border border-white/[0.08] space-y-4">
+            <div className="p-5 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.08] space-y-4">
               <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <span className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-2">
+                <span className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-2 font-mono">
                   <User className="w-4 h-4 text-purple-400" />
-                  <span>Student Details</span>
+                  <span>Student Information</span>
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500">All fields required</span>
+                <span className="text-[11px] text-zinc-500 font-mono">All fields required</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Full Name */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono font-medium text-zinc-400">
+                  <label className="block text-xs font-medium text-zinc-300">
                     Full Name <span className="text-purple-400">*</span>
                   </label>
                   <div className="relative">
@@ -316,16 +361,16 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                       placeholder="Enter your full name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full bg-[#0c0817] text-white text-sm pl-10 pr-4 py-3 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
+                      className="w-full bg-[#07050e] text-white text-sm pl-10 pr-4 py-2.5 rounded-lg border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
                       required
                     />
-                    <User className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <User className="w-4 h-4 text-zinc-500 absolute left-3 top-3 pointer-events-none" />
                   </div>
                 </div>
 
                 {/* Mobile Number */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono font-medium text-zinc-400">
+                  <label className="block text-xs font-medium text-zinc-300">
                     Mobile Number <span className="text-purple-400">*</span>
                   </label>
                   <div className="relative">
@@ -335,16 +380,16 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       onBlur={() => checkExistingUserFeedback(phone, email)}
-                      className="w-full bg-[#0c0817] text-white text-sm pl-10 pr-4 py-3 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 outline-none transition-all placeholder:text-zinc-600 font-sans font-mono"
+                      className="w-full bg-[#07050e] text-white text-sm pl-10 pr-4 py-2.5 rounded-lg border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder:text-zinc-600 font-sans font-mono"
                       required
                     />
-                    <Phone className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <Phone className="w-4 h-4 text-zinc-500 absolute left-3 top-3 pointer-events-none" />
                   </div>
                 </div>
 
                 {/* Email Address */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono font-medium text-zinc-400">
+                  <label className="block text-xs font-medium text-zinc-300">
                     Email Address <span className="text-purple-400">*</span>
                   </label>
                   <div className="relative">
@@ -354,16 +399,16 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onBlur={() => checkExistingUserFeedback(phone, email)}
-                      className="w-full bg-[#0c0817] text-white text-sm pl-10 pr-4 py-3 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
+                      className="w-full bg-[#07050e] text-white text-sm pl-10 pr-4 py-2.5 rounded-lg border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
                       required
                     />
-                    <Mail className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <Mail className="w-4 h-4 text-zinc-500 absolute left-3 top-3 pointer-events-none" />
                   </div>
                 </div>
 
                 {/* Batch / Department */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-mono font-medium text-zinc-400">
+                  <label className="block text-xs font-medium text-zinc-300">
                     Batch / Department <span className="text-purple-400">*</span>
                   </label>
                   <div className="relative">
@@ -372,45 +417,45 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                       placeholder="Enter batch or department"
                       value={batch}
                       onChange={(e) => setBatch(e.target.value)}
-                      className="w-full bg-[#0c0817] text-white text-sm pl-10 pr-4 py-3 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
+                      className="w-full bg-[#07050e] text-white text-sm pl-10 pr-4 py-2.5 rounded-lg border border-white/[0.1] focus:border-purple-500 focus:ring-1 focus:ring-purple-500/50 outline-none transition-all placeholder:text-zinc-600 font-sans"
                       required
                     />
-                    <GraduationCap className="w-4 h-4 text-zinc-500 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <GraduationCap className="w-4 h-4 text-zinc-500 absolute left-3 top-3 pointer-events-none" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* ======================================================== */}
-            {/* PART 2: RATING & DESCRIPTION FOR TRAINER: MR. NAVEEN PAUL */}
+            {/* PART 2: TRAINER EVALUATION (MR. NAVEEN PAUL)             */}
             {/* ======================================================== */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-[#130926] to-[#0a0418] border border-amber-500/30 space-y-4 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+            <div className="p-5 sm:p-6 rounded-xl bg-[#090713] border border-amber-500/25 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-700 flex items-center justify-center text-dark-950 font-black shadow-md border border-amber-400/40">
-                    <User className="w-5 h-5 text-dark-950" />
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 font-bold">
+                    <User className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
                       <span>Trainer Rating: Mr. Naveen Paul</span>
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/25">
                         Resource Person
                       </span>
                     </h3>
-                    <p className="text-xs text-zinc-400">
-                      Rate teaching delivery, startup insights, clarity & interactive engagement
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Rate teaching delivery, startup insights &amp; interactive engagement
                     </p>
                   </div>
                 </div>
 
-                <div className="text-xs font-bold text-amber-300 self-start sm:self-auto font-mono bg-black/50 px-3 py-1 rounded-lg border border-amber-500/30">
+                <div className="text-xs font-bold text-amber-300 font-mono bg-black/40 px-3 py-1 rounded-md border border-amber-500/20 self-start sm:self-auto">
                   {hoveredTrainerRating || trainerRating}.0 / 5.0
                 </div>
               </div>
 
-              {/* Star Rating Buttons for Mr. Naveen Paul */}
-              <div className="text-center py-2 space-y-2">
-                <div className="flex items-center justify-center gap-2 sm:gap-3">
+              {/* Star Rating Buttons */}
+              <div className="text-center py-2 space-y-1.5">
+                <div className="flex items-center justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => {
                     const isActive = (hoveredTrainerRating || trainerRating) >= star;
                     return (
@@ -420,12 +465,12 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                         onClick={() => setTrainerRating(star)}
                         onMouseEnter={() => setHoveredTrainerRating(star)}
                         onMouseLeave={() => setHoveredTrainerRating(0)}
-                        className="p-1 sm:p-2 transition-transform hover:scale-125 active:scale-95 focus:outline-none cursor-pointer"
+                        className="p-1.5 transition-transform hover:scale-125 active:scale-95 focus:outline-none cursor-pointer"
                       >
                         <Star
-                          className={`w-9 h-9 sm:w-11 sm:h-11 transition-all duration-200 ${
+                          className={`w-8 h-8 sm:w-9 sm:h-9 transition-colors ${
                             isActive 
-                              ? 'text-amber-400 fill-amber-400 filter drop-shadow-[0_0_12px_rgba(251,191,36,0.7)]' 
+                              ? 'text-amber-400 fill-amber-400 filter drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]' 
                               : 'text-zinc-700 hover:text-zinc-500'
                           }`}
                         />
@@ -433,55 +478,127 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                     );
                   })}
                 </div>
-                <div className="text-xs sm:text-sm font-mono font-semibold text-amber-300 animate-fade-in">
+                <div className="text-xs font-medium text-amber-300 font-mono">
                   {getTrainerSentiment(hoveredTrainerRating || trainerRating)}
                 </div>
               </div>
 
-              {/* Description / Review for Mr. Naveen Paul */}
+              {/* Brief Description */}
               <div>
-                <label className="block text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Heart className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Trainer Review & Feedback (Mr. Naveen Paul) *</span>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Brief Feedback on Mr. Naveen Paul's Session *
                 </label>
                 <textarea
-                  rows="3"
+                  rows="2"
                   value={trainerReview}
                   onChange={(e) => setTrainerReview(e.target.value)}
-                  placeholder="Share your thoughts and feedback on Mr. Naveen Paul's training session..."
-                  className="w-full bg-[#07050f] text-zinc-100 text-xs sm:text-sm p-4 rounded-xl border border-white/[0.1] focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 placeholder:text-zinc-600 transition-all resize-none leading-relaxed outline-none font-sans"
+                  placeholder="Share your thoughts and feedback on the trainer's session..."
+                  className="w-full bg-[#05030a] text-zinc-100 text-xs sm:text-sm p-3.5 rounded-lg border border-white/[0.1] focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 placeholder:text-zinc-600 transition-all resize-none outline-none font-sans"
                   required
                 />
               </div>
             </div>
 
             {/* ======================================================== */}
-            {/* PART 3: RATING & DESCRIPTION FOR WORKSHOP & PROGRAM */}
+            {/* PART 3: ORGANISATION TEAM EVALUATION                    */}
             {/* ======================================================== */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-b from-[#130926] to-[#0a0418] border border-purple-500/30 space-y-4 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
+            <div className="p-5 sm:p-6 rounded-xl bg-[#090713] border border-emerald-500/25 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center text-white font-black shadow-md border border-purple-400/40">
-                    <BookOpen className="w-5 h-5 text-white" />
+                  <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0 font-bold">
+                    <Users2 className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
-                      <span>Workshop & Program: ILLUMINATE 2026</span>
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <span>Organisation Team Rating</span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+                        Nxt Byte &amp; KMCT
+                      </span>
                     </h3>
-                    <p className="text-xs text-zinc-400">
-                      Rate the 6-hour masterclass curriculum, startup frameworks & event arrangements
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Rate event coordination, registration desk, venue arrangements &amp; support
                     </p>
                   </div>
                 </div>
 
-                <div className="text-xs font-bold text-purple-300 self-start sm:self-auto font-mono bg-black/50 px-3 py-1 rounded-lg border border-purple-500/30">
+                <div className="text-xs font-bold text-emerald-300 font-mono bg-black/40 px-3 py-1 rounded-md border border-emerald-500/20 self-start sm:self-auto">
+                  {hoveredOrgTeamRating || orgTeamRating}.0 / 5.0
+                </div>
+              </div>
+
+              {/* Star Rating Buttons */}
+              <div className="text-center py-2 space-y-1.5">
+                <div className="flex items-center justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const isActive = (hoveredOrgTeamRating || orgTeamRating) >= star;
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setOrgTeamRating(star)}
+                        onMouseEnter={() => setHoveredOrgTeamRating(star)}
+                        onMouseLeave={() => setHoveredOrgTeamRating(0)}
+                        className="p-1.5 transition-transform hover:scale-125 active:scale-95 focus:outline-none cursor-pointer"
+                      >
+                        <Star
+                          className={`w-8 h-8 sm:w-9 sm:h-9 transition-colors ${
+                            isActive 
+                              ? 'text-emerald-400 fill-emerald-400 filter drop-shadow-[0_0_8px_rgba(52,211,153,0.6)]' 
+                              : 'text-zinc-700 hover:text-zinc-500'
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-xs font-medium text-emerald-300 font-mono">
+                  {getOrgTeamSentiment(hoveredOrgTeamRating || orgTeamRating)}
+                </div>
+              </div>
+
+              {/* Brief Description */}
+              <div>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Brief Feedback on Event Coordination &amp; Organisation Team *
+                </label>
+                <textarea
+                  rows="2"
+                  value={orgTeamReview}
+                  onChange={(e) => setOrgTeamReview(e.target.value)}
+                  placeholder="Share your thoughts on the event management, support, and arrangements..."
+                  className="w-full bg-[#05030a] text-zinc-100 text-xs sm:text-sm p-3.5 rounded-lg border border-white/[0.1] focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/50 placeholder:text-zinc-600 transition-all resize-none outline-none font-sans"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* ======================================================== */}
+            {/* PART 4: WORKSHOP PROGRAM EVALUATION (ILLUMINATE 2026)    */}
+            {/* ======================================================== */}
+            <div className="p-5 sm:p-6 rounded-xl bg-[#090713] border border-purple-500/25 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-300 shrink-0 font-bold">
+                    <BookOpen className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                      <span>Workshop Program Rating: ILLUMINATE 2026</span>
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5">
+                      Rate the 6-hour masterclass curriculum, startup frameworks &amp; hands-on ideation
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-xs font-bold text-purple-300 font-mono bg-black/40 px-3 py-1 rounded-md border border-purple-500/20 self-start sm:self-auto">
                   {hoveredProgramRating || programRating}.0 / 5.0
                 </div>
               </div>
 
-              {/* Star Rating Buttons for Program */}
-              <div className="text-center py-2 space-y-2">
-                <div className="flex items-center justify-center gap-2 sm:gap-3">
+              {/* Star Rating Buttons */}
+              <div className="text-center py-2 space-y-1.5">
+                <div className="flex items-center justify-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => {
                     const isActive = (hoveredProgramRating || programRating) >= star;
                     return (
@@ -491,12 +608,12 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                         onClick={() => setProgramRating(star)}
                         onMouseEnter={() => setHoveredProgramRating(star)}
                         onMouseLeave={() => setHoveredProgramRating(0)}
-                        className="p-1 sm:p-2 transition-transform hover:scale-125 active:scale-95 focus:outline-none cursor-pointer"
+                        className="p-1.5 transition-transform hover:scale-125 active:scale-95 focus:outline-none cursor-pointer"
                       >
                         <Star
-                          className={`w-9 h-9 sm:w-11 sm:h-11 transition-all duration-200 ${
+                          className={`w-8 h-8 sm:w-9 sm:h-9 transition-colors ${
                             isActive 
-                              ? 'text-purple-400 fill-purple-400 filter drop-shadow-[0_0_12px_rgba(168,85,247,0.7)]' 
+                              ? 'text-purple-400 fill-purple-400 filter drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]' 
                               : 'text-zinc-700 hover:text-zinc-500'
                           }`}
                         />
@@ -504,44 +621,43 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
                     );
                   })}
                 </div>
-                <div className="text-xs sm:text-sm font-mono font-semibold text-purple-300 animate-fade-in">
+                <div className="text-xs font-medium text-purple-300 font-mono">
                   {getProgramSentiment(hoveredProgramRating || programRating)}
                 </div>
               </div>
 
-              {/* Description / Review for Workshop Program */}
+              {/* Brief Description */}
               <div>
-                <label className="block text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Workshop Program Review & Key Takeaway *</span>
+                <label className="block text-xs font-medium text-zinc-300 mb-1.5">
+                  Brief Feedback &amp; Key Takeaways from the Workshop Program *
                 </label>
                 <textarea
-                  rows="3"
+                  rows="2"
                   value={programReview}
                   onChange={(e) => setProgramReview(e.target.value)}
-                  placeholder="Share your thoughts and key takeaways from the ILLUMINATE workshop program..."
-                  className="w-full bg-[#07050f] text-zinc-100 text-xs sm:text-sm p-4 rounded-xl border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 placeholder:text-zinc-600 transition-all resize-none leading-relaxed outline-none font-sans"
+                  placeholder="Share your thoughts and key takeaways from the ILLUMINATE workshop..."
+                  className="w-full bg-[#05030a] text-zinc-100 text-xs sm:text-sm p-3.5 rounded-lg border border-white/[0.1] focus:border-purple-400 focus:ring-1 focus:ring-purple-400/50 placeholder:text-zinc-600 transition-all resize-none outline-none font-sans"
                   required
                 />
               </div>
             </div>
 
             {/* Recommendation Prompt */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#07050f] border border-white/[0.08] space-y-3">
-              <label className="block text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
-                Would you recommend this workshop & Mr. Naveen Paul to junior students or friends?
+            <div className="p-4 sm:p-5 rounded-xl bg-white/[0.02] border border-white/[0.08] space-y-3">
+              <label className="block text-xs font-semibold text-zinc-300 uppercase tracking-wider font-mono">
+                Would you recommend this workshop &amp; mentor to peers?
               </label>
               <div className="grid grid-cols-3 gap-2.5">
                 {[
-                  { value: 'yes', label: 'Definitely! 🚀', activeClass: 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/60' },
-                  { value: 'maybe', label: 'Maybe 👍', activeClass: 'bg-amber-600 text-white shadow-lg shadow-amber-950/60' },
-                  { value: 'no', label: 'Not Really 👎', activeClass: 'bg-rose-700 text-white shadow-lg shadow-rose-950/60' },
+                  { value: 'yes', label: 'Definitely! 🚀', activeClass: 'bg-emerald-600 text-white shadow-md' },
+                  { value: 'maybe', label: 'Maybe 👍', activeClass: 'bg-amber-600 text-white shadow-md' },
+                  { value: 'no', label: 'Not Really 👎', activeClass: 'bg-rose-700 text-white shadow-md' },
                 ].map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => setRecommend(option.value)}
-                    className={`py-3 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                       recommend === option.value
                         ? option.activeClass
                         : 'bg-white/[0.03] text-zinc-400 hover:text-white hover:bg-white/[0.06] border border-white/[0.08]'
@@ -554,12 +670,12 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
             </div>
 
             {/* Submit & Cancel Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-3">
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
               {isEditing && (
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="w-full sm:w-auto px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-zinc-400 hover:text-white bg-white/[0.03] border border-white/10 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-400 hover:text-white bg-white/[0.04] border border-white/10 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -568,17 +684,17 @@ export default function StudentFeedbackSection({ ticket, onSubmitted, standalone
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto py-3.5 px-9 rounded-full font-bold text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-purple-600 via-fuchsia-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-950/60 hover:shadow-purple-700/40 flex items-center justify-center gap-2 transition-all disabled:opacity-50 active:scale-95 cursor-pointer"
+                className="w-full sm:w-auto py-3 px-8 rounded-full font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-950/60 transition-all disabled:opacity-50 active:scale-95 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Submitting Your Review...</span>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Submitting...</span>
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4" />
-                    <span>{existingFeedback ? 'Update Review' : 'Submit Review'}</span>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>{existingFeedback ? 'Update Feedback' : 'Submit Feedback'}</span>
                   </>
                 )}
               </button>

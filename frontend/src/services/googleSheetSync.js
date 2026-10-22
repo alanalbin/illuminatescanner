@@ -9,9 +9,9 @@ const STORAGE_KEY_WEBHOOK = 'illuminate_google_sheet_webhook_url';
 const STORAGE_KEY_QUEUE = 'illuminate_google_sheet_unsynced_queue';
 
 export const GOOGLE_SHEET_CONFIG = {
-  spreadsheetId: '19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU',
-  spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU/edit?usp=sharing',
-  defaultSheetName: 'Feedback',
+  spreadsheetId: '1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68',
+  spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68/edit?usp=sharing',
+  defaultSheetName: 'Student Feedback',
 };
 
 class GoogleSheetSync {
@@ -84,8 +84,11 @@ class GoogleSheetSync {
       trainerName: feedback.trainerName || 'Mr. Naveen Paul',
       trainerRating: Number(feedback.trainerRating || feedback.mentorRating) || 5,
       trainerReview: feedback.trainerReview || feedback.likedMost || '',
+      orgTeamRating: Number(feedback.orgTeamRating || feedback.organizationRating) || 5,
+      orgTeamReview: feedback.orgTeamReview || '',
       programRating: Number(feedback.programRating || feedback.overallRating) || 5,
       programReview: feedback.programReview || feedback.suggestions || '',
+      overallRating: Number(feedback.overallRating) || 5,
       recommend: feedback.recommend || 'yes',
       submittedAt: feedback.submittedAt || new Date().toISOString(),
       action: 'FEEDBACK_SUBMISSION',

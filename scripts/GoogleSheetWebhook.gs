@@ -3,7 +3,7 @@
  * ILLUMINATE 2026 - GOOGLE SHEET FEEDBACK FORMATTER & REAL-TIME WEBHOOK
  * ============================================================================
  * Spreadsheet URL:
- * https://docs.google.com/spreadsheets/d/19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU/edit?usp=sharing
+ * https://docs.google.com/spreadsheets/d/1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68/edit?usp=sharing
  *
  * HOW TO FORMAT YOUR SHEET IN 30 SECONDS:
  * 1. Open your Google Sheet in browser.
@@ -51,6 +51,8 @@ function formatFeedbackSheet() {
     "Trainer Name",
     "Trainer Rating (1-5)",
     "Trainer Review (Mr. Naveen Paul)",
+    "Organisation Team Rating (1-5)",
+    "Organisation Team Review",
     "Workshop Rating (1-5)",
     "Workshop Review (ILLUMINATE)",
     "Would Recommend?",
@@ -86,20 +88,23 @@ function formatFeedbackSheet() {
     6: 240,  // College
     7: 160,  // Trainer Name
     8: 150,  // Trainer Rating (1-5)
-    9: 360,  // Trainer Review (Mr. Naveen Paul)
-    10: 150, // Workshop Rating (1-5)
-    11: 360, // Workshop Review (ILLUMINATE)
-    12: 150, // Would Recommend?
-    13: 130  // Ticket ID
+    9: 340,  // Trainer Review (Mr. Naveen Paul)
+    10: 160, // Organisation Team Rating (1-5)
+    11: 340, // Organisation Team Review
+    12: 150, // Workshop Rating (1-5)
+    13: 340, // Workshop Review (ILLUMINATE)
+    14: 150, // Would Recommend?
+    15: 130  // Ticket ID
   };
 
   for (var colIndex in widths) {
     sheet.setColumnWidth(Number(colIndex), widths[colIndex]);
   }
 
-  // Set Text Wrapping for Review Columns (Cols 9 & 11)
+  // Set Text Wrapping for Review Columns (Cols 9, 11, 13)
   sheet.getRange("I2:I").setWrap(true);
   sheet.getRange("K2:K").setWrap(true);
+  sheet.getRange("M2:M").setWrap(true);
 
   // Set Alignments for Data Rows
   sheet.getRange("A2:A").setHorizontalAlignment("center"); // Timestamp
@@ -111,10 +116,12 @@ function formatFeedbackSheet() {
   sheet.getRange("G2:G").setHorizontalAlignment("center"); // Trainer Name
   sheet.getRange("H2:H").setHorizontalAlignment("center").setFontWeight("bold"); // Trainer Rating
   sheet.getRange("I2:I").setHorizontalAlignment("left");   // Trainer Review
-  sheet.getRange("J2:J").setHorizontalAlignment("center").setFontWeight("bold"); // Workshop Rating
-  sheet.getRange("K2:K").setHorizontalAlignment("left");   // Workshop Review
-  sheet.getRange("L2:L").setHorizontalAlignment("center"); // Recommend
-  sheet.getRange("M2:M").setHorizontalAlignment("center").setFontFamily("Courier New"); // Ticket ID
+  sheet.getRange("J2:J").setHorizontalAlignment("center").setFontWeight("bold"); // Org Team Rating
+  sheet.getRange("K2:K").setHorizontalAlignment("left");   // Org Team Review
+  sheet.getRange("L2:L").setHorizontalAlignment("center").setFontWeight("bold"); // Workshop Rating
+  sheet.getRange("M2:M").setHorizontalAlignment("left");   // Workshop Review
+  sheet.getRange("N2:N").setHorizontalAlignment("center"); // Recommend
+  sheet.getRange("O2:O").setHorizontalAlignment("center").setFontFamily("Courier New"); // Ticket ID
 
   // Add Alternating Row Colors (Banded Range)
   var existingBandings = sheet.getBandings();
@@ -269,12 +276,14 @@ function doPost(e) {
     var trainerName = data.trainerName || "Mr. Naveen Paul";
     var trainerRating = Number(data.trainerRating) || 5;
     var trainerReview = data.trainerReview || "";
+    var orgTeamRating = Number(data.orgTeamRating) || 5;
+    var orgTeamReview = data.orgTeamReview || "";
     var programRating = Number(data.programRating) || 5;
     var programReview = data.programReview || "";
     var recommend = data.recommend === "yes" ? "Definitely! 🚀" : (data.recommend === "maybe" ? "Maybe 👍" : "Not Really 👎");
     var ticketId = data.ticketId || "WALK-IN";
 
-    // Append Row
+    // Append Row (15 Columns)
     sheet.appendRow([
       timestamp,
       participantName,
@@ -285,6 +294,8 @@ function doPost(e) {
       trainerName,
       trainerRating,
       trainerReview,
+      orgTeamRating,
+      orgTeamReview,
       programRating,
       programReview,
       recommend,
@@ -294,6 +305,7 @@ function doPost(e) {
     var lastRow = sheet.getLastRow();
     sheet.getRange(lastRow, 9).setWrap(true);
     sheet.getRange(lastRow, 11).setWrap(true);
+    sheet.getRange(lastRow, 13).setWrap(true);
 
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
@@ -314,6 +326,6 @@ function doGet(e) {
     status: "online",
     workshop: "ILLUMINATE 2026",
     service: "Student Feedback Webhook",
-    spreadsheet: "https://docs.google.com/spreadsheets/d/19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU/edit?usp=sharing"
+    spreadsheet: "https://docs.google.com/spreadsheets/d/1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68/edit?usp=sharing"
   })).setMimeType(ContentService.MimeType.JSON);
 }

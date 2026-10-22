@@ -1388,7 +1388,7 @@ export default function AdminDashboard() {
                 </button>
 
                 <a
-                  href="https://docs.google.com/spreadsheets/d/19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU/edit?usp=sharing"
+                  href="https://docs.google.com/spreadsheets/d/1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68/edit?usp=sharing"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-dark-900 hover:bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 transition-colors"
