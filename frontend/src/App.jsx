@@ -10,6 +10,7 @@ import QrScanner from './pages/QrScanner';
 import Login from './pages/Login';
 import Settings from './pages/Settings';
 import PassGallery from './pages/PassGallery';
+import StudentFeedback from './pages/StudentFeedback';
 
 function AppContent() {
   const location = useLocation();
@@ -34,6 +35,8 @@ function AppContent() {
           <Route path="/tickets" element={<TicketList />} />
           <Route path="/ticket/:ticketId" element={<DigitalPass />} />
           <Route path="/verify/:ticketId" element={<DigitalPass />} />
+          <Route path="/feedback" element={<StudentFeedback />} />
+          <Route path="/feedback/:ticketId" element={<StudentFeedback />} />
           <Route path="/settings" element={<Settings />} />
 
           {/* Fallback */}

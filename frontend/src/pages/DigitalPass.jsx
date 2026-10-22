@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import html2canvas from 'html2canvas';
 import IlluminateTicketPass from '../components/IlluminateTicketPass';
+import StudentFeedbackSection from '../components/StudentFeedbackSection';
 import { 
   Download, 
   Share2, 
@@ -234,6 +235,11 @@ export default function DigitalPass() {
           <Download className="w-4 h-4" />
           <span>{downloading ? 'GENERATING PASS IMAGE...' : 'DOWNLOAD HIGH-RES PASS'}</span>
         </button>
+      </div>
+
+      {/* Student Workshop Feedback & Rating Section */}
+      <div className="w-full max-w-[1020px] z-10">
+        <StudentFeedbackSection ticket={ticket} />
       </div>
 
     </div>

@@ -2,6 +2,58 @@ import { INITIAL_ATTENDEES } from '../data/attendees.js';
 
 const STORAGE_KEY = 'illuminate_local_attendees_v4';
 const LOGS_KEY = 'illuminate_local_checkin_logs_v4';
+const FEEDBACKS_KEY = 'illuminate_student_feedbacks_v2';
+
+const DEFAULT_FEEDBACKS = [
+  {
+    id: 'fb_sample_1',
+    ticketId: 'ILM-KMCT-MUTBSJW5-AED124',
+    participantName: 'Aryananda M',
+    college: 'KMCT College of Engineering, Kasaragod',
+    course: 'Electronics and Communication',
+    yearOfStudy: '1st Year',
+    overallRating: 5,
+    contentRating: 5,
+    mentorRating: 5,
+    organizationRating: 5,
+    recommend: 'yes',
+    likedMost: 'The hands-on startup ideation and pitch deck guidance from E-Cell IIT Bombay mentors was truly inspiring! Learned a lot about business models.',
+    suggestions: 'Would love a follow-up 2-day hackathon or bootcamp on funding & incubation next semester.',
+    submittedAt: '2026-10-22T10:45:00.000Z',
+  },
+  {
+    id: 'fb_sample_2',
+    ticketId: 'ILM-KMCT-MUTCBR59-C9F1E2',
+    participantName: 'Bhavya Shree',
+    college: 'KMCT College of Engineering, Kasaragod',
+    course: 'BTech ECE',
+    yearOfStudy: '1st Year',
+    overallRating: 5,
+    contentRating: 5,
+    mentorRating: 5,
+    organizationRating: 4,
+    recommend: 'yes',
+    likedMost: 'Case studies of real Indian startups and how they overcame initial roadblocks. Mentors explained financial metrics very simply.',
+    suggestions: 'Everything was great! More networking time with IIT Bombay student founders.',
+    submittedAt: '2026-10-22T11:10:00.000Z',
+  },
+  {
+    id: 'fb_sample_3',
+    ticketId: 'ILM-KMCT-MUTD4OFR-2F58F8',
+    participantName: 'Arya Vijayan',
+    college: 'KMCT College of Engineering, Kasaragod',
+    course: 'BTech Artificial intelligence and data science',
+    yearOfStudy: '1st Year',
+    overallRating: 5,
+    contentRating: 5,
+    mentorRating: 5,
+    organizationRating: 5,
+    recommend: 'yes',
+    likedMost: 'The session on AI products and building an MVP in 48 hours was super practical. The QR pass check-in system was also super smooth!',
+    suggestions: 'Please conduct another workshop on deep tech and patenting.',
+    submittedAt: '2026-10-22T11:20:00.000Z',
+  }
+];
 
 const memoryStore = new Map();
 const safeStorage = {
@@ -97,6 +149,31 @@ function saveLogs(logs) {
     dispatchAttendanceUpdate({ type: 'logs_updated', count: logs.length });
   } catch (e) {
     console.error('Failed to save logs:', e);
+  }
+}
+
+function loadFeedbacks() {
+  try {
+    const raw = safeStorage.getItem(FEEDBACKS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.error('Failed to parse local feedbacks:', e);
+  }
+  safeStorage.setItem(FEEDBACKS_KEY, JSON.stringify(DEFAULT_FEEDBACKS));
+  return [...DEFAULT_FEEDBACKS];
+}
+
+function saveFeedbacks(feedbacks) {
+  try {
+    safeStorage.setItem(FEEDBACKS_KEY, JSON.stringify(feedbacks));
+    dispatchAttendanceUpdate({ type: 'feedback_updated', count: feedbacks.length });
+  } catch (e) {
+    console.error('Failed to save feedbacks:', e);
   }
 }
 
@@ -620,6 +697,150 @@ export const localAttendanceStore = {
     if (changed) {
       saveTickets(tickets);
     }
+  },
+
+  // --- Student Feedback Subsystem ---
+  getFeedbacks: () => {
+    return loadFeedbacks().sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+  },
+
+  getFeedbackByTicketId: (ticketId) => {
+    if (!ticketId) return null;
+    const cleanId = String(ticketId).trim().toUpperCase();
+    const feedbacks = loadFeedbacks();
+    return feedbacks.find(f => f.ticketId && f.ticketId.trim().toUpperCase() === cleanId) || null;
+  },
+
+  submitFeedback: (data) => {
+    if (!data) throw new Error('Feedback data required');
+    const feedbacks = loadFeedbacks();
+    const cleanTicketId = data.ticketId ? String(data.ticketId).trim().toUpperCase() : '';
+    
+    // Check if feedback already exists for this ticket or explicit id
+    const existingIndex = feedbacks.findIndex(f => 
+      (cleanTicketId && f.ticketId && f.ticketId.trim().toUpperCase() === cleanTicketId) ||
+      (data.id && f.id === data.id)
+    );
+
+    const feedbackItem = {
+      id: existingIndex !== -1 ? feedbacks[existingIndex].id : `fb_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      ticketId: data.ticketId || '',
+      participantName: data.participantName || 'Anonymous Student',
+      college: data.college || 'KMCT College of Engineering, Kasaragod',
+      course: data.course || '',
+      yearOfStudy: data.yearOfStudy || '',
+      email: data.email || '',
+      phone: data.phone || '',
+      overallRating: Number(data.overallRating) || 5,
+      contentRating: Number(data.contentRating) || 5,
+      mentorRating: Number(data.mentorRating) || 5,
+      organizationRating: Number(data.organizationRating) || 5,
+      recommend: data.recommend || 'yes',
+      likedMost: data.likedMost || '',
+      suggestions: data.suggestions || '',
+      submittedAt: new Date().toISOString(),
+    };
+
+    if (existingIndex !== -1) {
+      feedbacks[existingIndex] = feedbackItem;
+    } else {
+      feedbacks.unshift(feedbackItem);
+    }
+
+    saveFeedbacks(feedbacks);
+    return feedbackItem;
+  },
+
+  deleteFeedback: (id) => {
+    if (!id) return;
+    const feedbacks = loadFeedbacks();
+    const filtered = feedbacks.filter(f => f.id !== id);
+    saveFeedbacks(filtered);
+    return filtered;
+  },
+
+  getFeedbackStats: () => {
+    const feedbacks = loadFeedbacks();
+    const total = feedbacks.length;
+    if (total === 0) {
+      return {
+        total: 0,
+        avgRating: 0,
+        avgContent: 0,
+        avgMentor: 0,
+        avgOrg: 0,
+        recommendRate: 0,
+        distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+      };
+    }
+
+    let sumOverall = 0;
+    let sumContent = 0;
+    let sumMentor = 0;
+    let sumOrg = 0;
+    let recommendYesCount = 0;
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+    feedbacks.forEach(f => {
+      const overall = Math.min(5, Math.max(1, Math.round(Number(f.overallRating) || 5)));
+      sumOverall += Number(f.overallRating) || 5;
+      sumContent += Number(f.contentRating) || 5;
+      sumMentor += Number(f.mentorRating) || 5;
+      sumOrg += Number(f.organizationRating) || 5;
+      distribution[overall] = (distribution[overall] || 0) + 1;
+      if (f.recommend === 'yes') recommendYesCount++;
+    });
+
+    return {
+      total,
+      avgRating: Math.round((sumOverall / total) * 10) / 10,
+      avgContent: Math.round((sumContent / total) * 10) / 10,
+      avgMentor: Math.round((sumMentor / total) * 10) / 10,
+      avgOrg: Math.round((sumOrg / total) * 10) / 10,
+      recommendRate: Math.round((recommendYesCount / total) * 100),
+      distribution
+    };
+  },
+
+  exportFeedbackCsvString: () => {
+    const feedbacks = loadFeedbacks();
+    const headers = [
+      'Submission ID',
+      'Ticket ID',
+      'Participant Name',
+      'College',
+      'Course',
+      'Year of Study',
+      'Overall Rating (out of 5)',
+      'Workshop Content Rating',
+      'IIT Bombay Mentors Rating',
+      'Venue & Org Rating',
+      'Would Recommend',
+      'Liked Most',
+      'Suggestions',
+      'Submitted At'
+    ];
+
+    const escapeCsv = (str) => `"${String(str || '').replace(/"/g, '""')}"`;
+
+    const rows = feedbacks.map(f => [
+      escapeCsv(f.id),
+      escapeCsv(f.ticketId),
+      escapeCsv(f.participantName),
+      escapeCsv(f.college),
+      escapeCsv(f.course),
+      escapeCsv(f.yearOfStudy),
+      f.overallRating || 5,
+      f.contentRating || 5,
+      f.mentorRating || 5,
+      f.organizationRating || 5,
+      escapeCsv(f.recommend === 'yes' ? 'Yes' : f.recommend === 'maybe' ? 'Maybe' : 'No'),
+      escapeCsv(f.likedMost),
+      escapeCsv(f.suggestions),
+      escapeCsv(f.submittedAt)
+    ]);
+
+    return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
   }
 };
 

@@ -27,17 +27,26 @@ import {
   RotateCcw,
   Sparkles,
   School,
-  GraduationCap
+  GraduationCap,
+  Star,
+  MessageSquareHeart,
+  ThumbsUp,
+  Trash2,
+  Award,
+  Heart
 } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(() => localAttendanceStore.getStats());
   const [tickets, setTickets] = useState(() => localAttendanceStore.getTickets());
+  const [feedbacks, setFeedbacks] = useState(() => localAttendanceStore.getFeedbacks());
+  const [feedbackRatingFilter, setFeedbackRatingFilter] = useState('all');
+  const [copiedFeedbackUrl, setCopiedFeedbackUrl] = useState(false);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('present'); // 'present' | 'awaiting' | 'all' | 'logs'
+  const [activeTab, setActiveTab] = useState('present'); // 'present' | 'awaiting' | 'all' | 'logs' | 'feedback'
   const [searchQuery, setSearchQuery] = useState('');
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
@@ -47,13 +56,17 @@ export default function AdminDashboard() {
   const fetchDashboardData = async (isSilent = false) => {
     if (!isSilent) setRefreshing(true);
     try {
-      const [statsData, ticketsData] = await Promise.all([
+      const [statsData, ticketsData, feedbacksData] = await Promise.all([
         api.getStats().catch(err => { console.warn('Stats err:', err); return null; }),
-        api.getTickets().catch(err => { console.warn('Tickets err:', err); return []; })
+        api.getTickets().catch(err => { console.warn('Tickets err:', err); return []; }),
+        api.getFeedbacks().catch(err => { console.warn('Feedbacks err:', err); return []; })
       ]);
       if (statsData) setStats(statsData);
       if (Array.isArray(ticketsData) && ticketsData.length > 0) {
         setTickets(ticketsData);
+      }
+      if (Array.isArray(feedbacksData)) {
+        setFeedbacks(feedbacksData);
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -210,6 +223,46 @@ export default function AdminDashboard() {
   const filteredCheckedIn = useMemo(() => filterBySearch(checkedInAttendees), [checkedInAttendees, searchQuery]);
   const filteredAwaiting = useMemo(() => filterBySearch(awaitingAttendees), [awaitingAttendees, searchQuery]);
   const filteredAll = useMemo(() => filterBySearch(allAttendees), [allAttendees, searchQuery]);
+
+  const feedbackStats = useMemo(() => {
+    return localAttendanceStore.getFeedbackStats();
+  }, [feedbacks]);
+
+  const filteredFeedbacks = useMemo(() => {
+    return feedbacks.filter(fb => {
+      if (feedbackRatingFilter !== 'all') {
+        if (Math.round(fb.overallRating) !== Number(feedbackRatingFilter)) return false;
+      }
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase().trim();
+      return (
+        (fb.participantName && fb.participantName.toLowerCase().includes(q)) ||
+        (fb.ticketId && fb.ticketId.toLowerCase().includes(q)) ||
+        (fb.college && fb.college.toLowerCase().includes(q)) ||
+        (fb.course && fb.course.toLowerCase().includes(q)) ||
+        (fb.likedMost && fb.likedMost.toLowerCase().includes(q)) ||
+        (fb.suggestions && fb.suggestions.toLowerCase().includes(q))
+      );
+    });
+  }, [feedbacks, feedbackRatingFilter, searchQuery]);
+
+  const handleDeleteFeedback = async (id, participantName) => {
+    if (!window.confirm(`Delete feedback submission from ${participantName || 'attendee'}?`)) return;
+    try {
+      await api.deleteFeedback(id);
+      setFeedbacks(prev => prev.filter(f => f.id !== id));
+      fetchDashboardData(true);
+    } catch (e) {
+      alert('Failed to delete feedback: ' + (e.message || 'Error'));
+    }
+  };
+
+  const handleCopyFeedbackUrl = () => {
+    const url = `${window.location.origin}/feedback`;
+    navigator.clipboard?.writeText(url);
+    setCopiedFeedbackUrl(true);
+    setTimeout(() => setCopiedFeedbackUrl(false), 2000);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-5 sm:space-y-8">
@@ -399,6 +452,23 @@ export default function AdminDashboard() {
                 {logs.length}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('feedback')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                activeTab === 'feedback'
+                  ? 'bg-gradient-to-r from-amber-600 via-purple-600 to-fuchsia-600 text-white shadow-[0_0_20px_rgba(245,158,11,0.45)]'
+                  : 'bg-dark-900/70 text-purple-300 hover:text-white hover:bg-purple-900/40 border border-purple-900/50'
+              }`}
+            >
+              <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <span>Student Feedback</span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                activeTab === 'feedback' ? 'bg-amber-800 text-white' : 'bg-purple-900 text-purple-200'
+              }`}>
+                {feedbacks.length}
+              </span>
+            </button>
           </div>
 
           {/* Search Box */}
@@ -407,7 +477,7 @@ export default function AdminDashboard() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400" />
               <input
                 type="text"
-                placeholder="Search attendee, ticket ID, college..."
+                placeholder={activeTab === 'feedback' ? "Search student, review, suggestions..." : "Search attendee, ticket ID, college..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-xl bg-dark-900/80 border border-purple-700/50 text-white text-xs sm:text-sm placeholder-purple-400/50 focus:outline-none focus:border-purple-400 transition-colors"
@@ -1137,6 +1207,290 @@ export default function AdminDashboard() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Tab 5: Student Feedback & Workshop Experience Hub */}
+        {activeTab === 'feedback' && (
+          <div className="p-4 sm:p-6 space-y-6">
+            
+            {/* KPI Analytics Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              
+              {/* Card 1: Overall Average Rating */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-950/40 via-dark-900 to-purple-950/30 border border-amber-500/30 shadow-lg relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">Overall Rating</span>
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <Star className="w-4 h-4 fill-amber-400" />
+                  </div>
+                </div>
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-black text-white tracking-tight">
+                    {feedbackStats.avgRating > 0 ? feedbackStats.avgRating : '5.0'}
+                  </span>
+                  <span className="text-sm font-bold text-amber-400">/ 5.0</span>
+                </div>
+                <div className="flex items-center gap-1 mt-2 text-amber-400">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-3.5 h-3.5 ${
+                        star <= Math.round(feedbackStats.avgRating || 5)
+                          ? 'fill-amber-400 text-amber-400'
+                          : 'text-slate-600'
+                      }`}
+                    />
+                  ))}
+                  <span className="text-[11px] text-purple-300/70 ml-1.5 font-medium">
+                    ({feedbackStats.total} {feedbackStats.total === 1 ? 'response' : 'responses'})
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 2: Recommendation Rate */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 via-dark-900 to-purple-950/30 border border-emerald-500/30 shadow-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Recommend Rate</span>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <ThumbsUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-3 flex items-baseline gap-1">
+                  <span className="text-3xl font-black text-emerald-400 tracking-tight">
+                    {feedbackStats.recommendRate}%
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-300/70 mt-2 font-medium">
+                  Would definitely recommend ILLUMINATE to peers
+                </p>
+              </div>
+
+              {/* Card 3: Pillar Averages */}
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-950/50 via-dark-900 to-indigo-950/40 border border-purple-500/30 shadow-lg space-y-2">
+                <span className="text-xs font-bold text-purple-300 uppercase tracking-wider block">Pillar Scores</span>
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-purple-300/80">Content:</span>
+                    <span className="font-bold text-white font-mono">{feedbackStats.avgContent || 5.0} ★</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-purple-300/80">IITB Mentors:</span>
+                    <span className="font-bold text-white font-mono">{feedbackStats.avgMentor || 5.0} ★</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-purple-300/80">Organization:</span>
+                    <span className="font-bold text-white font-mono">{feedbackStats.avgOrg || 5.0} ★</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Star Breakdown Bar Chart */}
+              <div className="p-5 rounded-2xl bg-dark-900/80 border border-purple-500/20 shadow-lg space-y-1.5">
+                <span className="text-xs font-bold text-purple-300 uppercase tracking-wider block">Star Distribution</span>
+                {[5, 4, 3, 2, 1].map((s) => {
+                  const count = feedbackStats.distribution[s] || 0;
+                  const pct = feedbackStats.total > 0 ? Math.round((count / feedbackStats.total) * 100) : 0;
+                  return (
+                    <div key={s} className="flex items-center gap-2 text-[10px]">
+                      <span className="w-5 text-purple-300 font-bold">{s}★</span>
+                      <div className="flex-1 bg-dark-950 h-2 rounded-full overflow-hidden border border-purple-900/40">
+                        <div
+                          className="bg-amber-400 h-full rounded-full transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="w-7 text-right text-purple-400 font-mono">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+            </div>
+
+            {/* Filter and Action Controls Strip */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-dark-950/60 border border-purple-500/20">
+              
+              {/* Rating Filters */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'all', label: `All (${feedbacks.length})` },
+                  { id: '5', label: `5 Stars ★ (${feedbackStats.distribution[5] || 0})` },
+                  { id: '4', label: `4 Stars ★ (${feedbackStats.distribution[4] || 0})` },
+                  { id: '3', label: `3 Stars ★ (${feedbackStats.distribution[3] || 0})` },
+                ].map((chip) => (
+                  <button
+                    key={chip.id}
+                    onClick={() => setFeedbackRatingFilter(chip.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                      feedbackRatingFilter === chip.id
+                        ? 'bg-amber-500 text-dark-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-dark-900 text-purple-300 hover:text-white hover:bg-purple-900/40 border border-purple-800/40'
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Actions: Copy Link & Export CSV */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleCopyFeedbackUrl}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-dark-900 hover:bg-purple-950 text-purple-200 border border-purple-600/40 transition-colors active:scale-95"
+                  title="Copy student feedback form link for sharing on WhatsApp or projection"
+                >
+                  {copiedFeedbackUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-purple-400" />}
+                  <span>{copiedFeedbackUrl ? 'LINK COPIED!' : 'COPY FORM LINK'}</span>
+                </button>
+
+                <button
+                  onClick={() => api.downloadFeedbackCsv()}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-glow-purple transition-all active:scale-95"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>EXPORT FEEDBACK CSV</span>
+                </button>
+
+                <Link
+                  to="/feedback"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>OPEN FORM</span>
+                </Link>
+              </div>
+
+            </div>
+
+            {/* Student Feedback Reviews Grid */}
+            {filteredFeedbacks.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredFeedbacks.map((fb) => {
+                  const rating = Number(fb.overallRating) || 5;
+                  const initials = fb.participantName 
+                    ? fb.participantName.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+                    : 'ST';
+
+                  return (
+                    <div
+                      key={fb.id}
+                      className="p-5 rounded-2xl bg-gradient-to-br from-dark-900/90 to-purple-950/30 border border-purple-500/20 hover:border-purple-500/40 transition-all flex flex-col justify-between space-y-4 shadow-md group"
+                    >
+                      <div className="space-y-3">
+                        {/* Student Header & Rating */}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-fuchsia-600 flex items-center justify-center font-bold text-white text-xs shadow-md shrink-0">
+                              {initials}
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                                <span>{fb.participantName}</span>
+                                {fb.recommend === 'yes' && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                                    Recommends
+                                  </span>
+                                )}
+                              </h4>
+                              <p className="text-[11px] text-purple-300/70">
+                                {fb.course ? `${fb.course} &bull; ` : ''}{fb.college}
+                              </p>
+                              {fb.ticketId && (
+                                <Link
+                                  to={`/ticket/${fb.ticketId}`}
+                                  className="text-[10px] font-mono text-purple-400 hover:text-purple-200 inline-flex items-center gap-1 mt-0.5 underline decoration-purple-500/30"
+                                >
+                                  <span>{fb.ticketId}</span>
+                                  <ExternalLink className="w-2.5 h-2.5" />
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Overall Stars Badge */}
+                          <div className="flex flex-col items-end shrink-0">
+                            <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-black text-xs">
+                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                              <span>{rating}.0</span>
+                            </div>
+                            <span className="text-[10px] text-purple-400/60 mt-1">
+                              {getRelativeTime(fb.submittedAt)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Pillar Scores Pill Tags */}
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-medium">
+                          <span className="px-2 py-0.5 rounded-lg bg-purple-950/60 text-purple-300 border border-purple-800/40">
+                            Content: <strong>{fb.contentRating || 5}★</strong>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-lg bg-fuchsia-950/60 text-fuchsia-300 border border-fuchsia-800/40">
+                            Mentors: <strong>{fb.mentorRating || 5}★</strong>
+                          </span>
+                          <span className="px-2 py-0.5 rounded-lg bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
+                            Org: <strong>{fb.organizationRating || 5}★</strong>
+                          </span>
+                        </div>
+
+                        {/* Qualitative Comments */}
+                        {fb.likedMost && (
+                          <div className="p-3 rounded-xl bg-purple-950/20 border border-purple-500/20 text-xs text-purple-200">
+                            <span className="text-[10px] font-bold uppercase text-purple-400 block mb-1 flex items-center gap-1">
+                              <Heart className="w-3 h-3 text-pink-400 fill-pink-400" />
+                              Liked Most:
+                            </span>
+                            <p className="italic">"{fb.likedMost}"</p>
+                          </div>
+                        )}
+
+                        {fb.suggestions && (
+                          <div className="p-3 rounded-xl bg-dark-950/50 border border-purple-500/20 text-xs text-purple-300/90">
+                            <span className="text-[10px] font-bold uppercase text-purple-400 block mb-1 flex items-center gap-1">
+                              <Sparkles className="w-3 h-3 text-amber-400" />
+                              Suggestions:
+                            </span>
+                            <p className="italic">"{fb.suggestions}"</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="flex items-center justify-between pt-2 border-t border-purple-900/30 text-[11px] text-purple-400/60">
+                        <span>Submitted: {new Date(fb.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} &bull; {new Date(fb.submittedAt).toLocaleDateString()}</span>
+                        <button
+                          onClick={() => handleDeleteFeedback(fb.id, fb.participantName)}
+                          className="opacity-0 group-hover:opacity-100 hover:text-rose-400 transition-opacity p-1"
+                          title="Delete feedback entry"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-12 text-center rounded-3xl bg-dark-950/40 border border-purple-500/20 space-y-3">
+                <MessageSquareHeart className="w-12 h-12 text-purple-400/40 mx-auto" />
+                <h3 className="text-base font-bold text-white">No Feedbacks Found</h3>
+                <p className="text-xs text-purple-300/70 max-w-sm mx-auto">
+                  {searchQuery 
+                    ? `No feedbacks match query "${searchQuery}". Try clearing search or rating filter.`
+                    : 'No feedback submissions in this category yet. Share the feedback form link with students!'}
+                </p>
+                <div className="pt-2">
+                  <Link
+                    to="/feedback"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-glow-purple transition-all"
+                  >
+                    <span>Submit Sample Feedback</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
       </div>

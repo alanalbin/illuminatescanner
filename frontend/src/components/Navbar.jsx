@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { QrCode, LayoutDashboard, Ticket, Settings, ScanLine, UserCheck, Sparkles, MapPin } from 'lucide-react';
+import { QrCode, LayoutDashboard, Ticket, Settings, ScanLine, UserCheck, Sparkles, MapPin, MessageSquareHeart } from 'lucide-react';
 import { localAttendanceStore } from '../services/localAttendanceStore';
 
 export default function Navbar() {
@@ -32,6 +32,7 @@ export default function Navbar() {
     { label: 'Live Attendance', path: '/attendance', icon: LayoutDashboard },
     { label: 'Attendee List', path: '/tickets', icon: Ticket },
     { label: 'QR Passes', path: '/passes', icon: QrCode },
+    { label: 'Feedback', path: '/feedback', icon: MessageSquareHeart },
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
 

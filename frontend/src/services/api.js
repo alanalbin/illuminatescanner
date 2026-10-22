@@ -312,4 +312,47 @@ export const api = {
       return settings;
     }
   },
+
+  // Student Feedback APIs
+  getFeedbacks: async () => {
+    return localAttendanceStore.getFeedbacks();
+  },
+
+  getFeedbackByTicketId: async (ticketId) => {
+    return localAttendanceStore.getFeedbackByTicketId(ticketId);
+  },
+
+  getFeedbackStats: async () => {
+    return localAttendanceStore.getFeedbackStats();
+  },
+
+  submitFeedback: async (feedbackData) => {
+    const saved = localAttendanceStore.submitFeedback(feedbackData);
+    // Non-blocking background sync if backend available
+    request('/feedback', {
+      method: 'POST',
+      body: JSON.stringify(feedbackData),
+    }).catch(() => {});
+    return saved;
+  },
+
+  deleteFeedback: async (id) => {
+    const updated = localAttendanceStore.deleteFeedback(id);
+    request(`/feedback/${id}`, {
+      method: 'DELETE',
+    }).catch(() => {});
+    return updated;
+  },
+
+  downloadFeedbackCsv: () => {
+    const csvContent = localAttendanceStore.exportFeedbackCsvString();
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `illuminate_student_feedback_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  },
 };
