@@ -1,8 +1,11 @@
 /**
- * Google Sheet Real-time Sync Service
- * Spreadsheet: https://docs.google.com/spreadsheets/d/19KDKagXBecFyaZSYqaGjz-LOSitukaCXsCfK2cF14DU/edit?usp=sharing
+ * Google Sheet & Google Form Real-time Sync Service
+ * Spreadsheet: https://docs.google.com/spreadsheets/d/1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68/edit?usp=sharing
+ * Google Form: https://docs.google.com/forms/d/e/1FAIpQLSfqtBNHYgy0JIcQlu6iIGGQVGer3IAgwfhfRXkYFrlqQSF6XQ/viewform
  * 
- * Automatically sends every student feedback submission to the linked Google Sheet in real time.
+ * Automatically sends every student feedback submission to:
+ * 1. The official Google Form endpoint (native Google-to-Sheets pipeline)
+ * 2. The Google Apps Script Webhook (if deployed)
  */
 
 const STORAGE_KEY_WEBHOOK = 'illuminate_google_sheet_webhook_url';
@@ -13,6 +16,9 @@ export const GOOGLE_SHEET_CONFIG = {
   spreadsheetUrl: 'https://docs.google.com/spreadsheets/d/1FX6FUEm_9urEtGZ_-neZF1pZiprzU7ErBjd5ZYQ5o68/edit?usp=sharing',
   defaultSheetName: 'Student Feedback',
 };
+
+// Official Google Form Response URL (submits directly to Google Forms backend)
+export const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSfqtBNHYgy0JIcQlu6iIGGQVGer3IAgwfhfRXkYFrlqQSF6XQ/formResponse';
 
 class GoogleSheetSync {
   constructor() {
@@ -90,71 +96,101 @@ class GoogleSheetSync {
   }
 
   /**
-   * Automatically dispatch feedback record to Google Sheet
+   * Submits directly to the Google Form response endpoint
+   * Google Forms automatically inserts this into the linked Google Sheet!
+   */
+  async submitDirectlyToGoogleForm(payload) {
+    try {
+      const formData = new FormData();
+      formData.append('entry.2072471034', payload.studentName || '');
+      formData.append('entry.3566228', payload.departmentAndCourse || '');
+      formData.append('entry.1908939836', payload.yearOfStudy || '1st year');
+      formData.append('entry.1351658189', payload.mobileNumber || '');
+      formData.append('entry.84902081', String(payload.overallWorkshopRating || 5));
+      formData.append('entry.717571131', String(payload.relevanceRating || 5));
+      formData.append('entry.757459011', String(payload.trainerKnowledgeRating || 5));
+      formData.append('entry.971168313', String(payload.clarityRating || 5));
+      formData.append('entry.193016744', String(payload.engagementRating || 5));
+      formData.append('entry.2035088795', payload.overallFeedback || '');
+
+      await fetch(GOOGLE_FORM_ACTION_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: formData,
+      });
+
+      console.log('✅ Real-time response dispatched to Google Forms:', payload.studentName);
+      return true;
+    } catch (err) {
+      console.warn('⚠️ Google Form direct submission note:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Automatically dispatch feedback record to Google Sheet & Form
    */
   async sendFeedbackToGoogleSheet(feedback) {
     const payload = this.formatPayload(feedback);
+
+    // 1. Send directly to Google Form backend (auto-populates linked Google Sheet)
+    this.submitDirectlyToGoogleForm(payload).catch(() => {});
+
+    // 2. Also send to Google Apps Script Webhook if configured
     const webhook = this.getWebhookUrl();
-
-    // If no webhook configured yet, queue for later sync
-    if (!webhook) {
-      console.info('Google Sheet Webhook URL not set yet. Queuing submission for sync.');
+    if (webhook) {
+      try {
+        await fetch(webhook, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+        console.log('✅ Real-time feedback synced via Webhook to Google Sheet:', payload.studentName);
+      } catch (err) {
+        console.warn('⚠️ Webhook sync temporary issue, queuing:', err);
+        const queue = this.getUnsyncedQueue();
+        queue.push(payload);
+        this.saveUnsyncedQueue(queue);
+      }
+    } else {
       const queue = this.getUnsyncedQueue();
       queue.push(payload);
       this.saveUnsyncedQueue(queue);
-      return { success: true, queued: true, message: 'Saved locally; queued for Google Sheet sync' };
     }
 
-    try {
-      // Use mode: 'no-cors' so browser security headers never block the Google Apps Script redirect
-      await fetch(webhook, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      console.log('✅ Real-time feedback synced to Google Sheet:', payload.participantName);
-      return { success: true, queued: false, message: 'Synced to Google Sheet' };
-    } catch (err) {
-      console.warn('⚠️ Google Sheet sync temporary network issue, queuing:', err);
-      const queue = this.getUnsyncedQueue();
-      queue.push(payload);
-      this.saveUnsyncedQueue(queue);
-      return { success: false, queued: true, error: err.message };
-    }
+    return { success: true, message: 'Dispatched to Google Sheet' };
   }
 
   /**
    * Bulk sync all queued or existing feedback entries
    */
   async syncAllFeedbacks(feedbacks = []) {
-    const webhook = this.getWebhookUrl();
-    if (!webhook) {
-      throw new Error('Please configure the Google Apps Script Webhook URL first in Settings.');
-    }
-
     let successCount = 0;
     const items = Array.isArray(feedbacks) && feedbacks.length > 0 ? feedbacks : this.getUnsyncedQueue();
 
     for (const item of items) {
       const payload = item.submissionId ? item : this.formatPayload(item);
       try {
-        await fetch(webhook, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        await this.submitDirectlyToGoogleForm(payload);
+        
+        const webhook = this.getWebhookUrl();
+        if (webhook) {
+          await fetch(webhook, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+        }
         successCount++;
       } catch (e) {
         console.warn('Failed item sync:', e);
       }
     }
 
-    // Clear queue if successfully sent
     if (successCount > 0) {
       this.saveUnsyncedQueue([]);
     }
